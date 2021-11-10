@@ -71,9 +71,10 @@
                         search.createColumn({name: "vatregnumber", label: "Tax Number"})                
                     ]
                  });
-                 var cus_id='',cus_name,cus_subsidiary,cus_stage,cus_vatregnumber;
+                 var cus_id='',cus_name,cus_entityid,cus_subsidiary,cus_stage,cus_vatregnumber;
                  customerSearchObj.run().each(function(result){
                     cus_id=result.id;
+                    cus_entityid=result.getValue('entityid');
                     cus_name=result.getValue('altname');
                     cus_subsidiary=result.getValue({
                         name: "name",
@@ -88,6 +89,7 @@
                     var relat_data={
                         cus_status:'old', 
                         id:cus_id,
+                        entityid:cus_entityid,
                         name:cus_name,
                         subsidiary:cus_subsidiary,
                         stage:cus_stage,
