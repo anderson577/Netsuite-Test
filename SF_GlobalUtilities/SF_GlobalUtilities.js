@@ -38,10 +38,10 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
             var password=rec.getValue('custrecord_sf_password');
             var account=rec.getValue('custrecord_sf_account');
             var token_url ='https://'+account+'/services/oauth2/token?grant_type=password&client_id='+consumer_key+'&client_secret='+consumer_secret+'&username='+username+'&password='+password;
-            log.debug('token_url', token_url); 
+          //  log.debug('token_url', token_url); 
             var response = https.post({url: token_url});
             var token = JSON.parse(response.body).access_token;
-            log.debug('token', token)
+          //  log.debug('token', token)
             if(token!=null&&token!=''&&token!=undefined){
                 var api_url = 'https://'+account+'/services/apexrest/'+functionname;
                
