@@ -91,7 +91,7 @@
             return {
                 status:'fail',
                 data:{},
-                error_msg:err
+                error_msg:err.message
             };     
         }                      
       

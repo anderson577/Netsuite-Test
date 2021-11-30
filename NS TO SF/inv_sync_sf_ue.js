@@ -21,7 +21,8 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
     }
 
     function afterSubmit(context) {
-
+        log.debug('context', context);
+        log.debug('executionContext', runtime.executionContext);
         if (context.type == "edit" || context.type == "create"){        
 
             var id = context.newRecord.id;

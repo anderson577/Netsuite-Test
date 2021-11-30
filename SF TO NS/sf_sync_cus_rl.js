@@ -111,15 +111,20 @@
                         isDynamic: false,                       
                     });
                     opp_rec.setValue({fieldId: 'isperson',value:'F',ignoreFieldChange: true});
-                    opp_rec.setValue({fieldId: 'probability',value:data.probability,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'probability',value:data.opp.probability,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'companyname',value:data.name,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'subsidiary',value:search_Subsidiary(data.subsidary),ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'phone',value:data.phone,ignoreFieldChange: true});
-                    opp_rec.setValue({fieldId: 'leadsource',value:search_campaign('Referral by Partner'),ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'leadsource',value:search_campaign(data.opp.leadSource),ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'vatregnumber',value:data.vat_reg,ignoreFieldChange: true});
                     opp_rec.setText({fieldId: 'currency',text:data.currency_t,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'comments',value:data.description,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'custentity1',value:data.bankname,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'accountnumber',value:data.bankaccount,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'custentity2',value:data.bankcode,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'custentity13',value:data.abbreviation,ignoreFieldChange: true});
                     addresss(opp_rec,data);
+                    add_SalesRep(opp_rec,data);
 
                     var opp_rec_id=opp_rec.save({
                         enableSourcing: false,
@@ -201,10 +206,41 @@
                     id:cus_id                  
                 }; 
 
-                var opportunity_rec=record.create({
-                    type: 'customrecord_sf_opportunity',
-                    isDynamic: true,                       
-                });
+                var opportunity_id='';
+                var customrecord_sf_opportunitySearchObj = search.create({
+                    type: "customrecord_sf_opportunity",
+                    filters:
+                    [
+                       ["custrecord_sf_opp_id","is",data.opp.id]
+                    ],
+                    columns:
+                    [
+                       search.createColumn({
+                          name: "name",
+                          sort: search.Sort.ASC,
+                          label: "Name"
+                       }),
+                       search.createColumn({name: "custrecord_sf_opp_id", label: "SALESFORCE OPPORTUNITY ID"})
+                    ]
+                 });
+                 customrecord_sf_opportunitySearchObj.run().each(function(result){
+                    opportunity_id=result.id;
+                    return true;
+                 });
+                var opportunity_rec;
+                if(opportunity_id==''){
+                    opportunity_rec=record.create({
+                        type: 'customrecord_sf_opportunity',
+                        isDynamic: true,                       
+                    }); 
+                }else{
+                    opportunity_rec=record.load({
+                        type: 'customrecord_sf_opportunity',
+                        id:opportunity_id,
+                        isDynamic: true,                       
+                    }); 
+                }
+            
                 opportunity_rec.setValue({fieldId: 'name',value:data.opp.name,ignoreFieldChange: true});
                 opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_id',value:data.opp.id,ignoreFieldChange: true});
                 opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_acc',value:sf_account_id,ignoreFieldChange: true});
@@ -213,8 +249,9 @@
                     enableSourcing: false,
                     ignoreMandatoryFields: true
                 });  
+              
 
-                log.debug('opportunity_rec_id',opportunity_rec.id);
+                log.debug('opportunity_rec',opportunity_rec.id);
 
 
                 var response_data={
@@ -244,7 +281,7 @@
             return {
                 status:'fail',
                 data:{},
-                error_msg:err
+                error_msg:err.message
             };     
         }                      
       
@@ -335,37 +372,91 @@
     }
     function add_contact(company_id,data,account_data){
         for(var i=0;i<data.contacts.length;i++){
-
             var con_data=data.contacts[i];
+            try {               
 
-            var contact_rec=record.create({
-                type: 'contact',
-                isDynamic: false,                       
-            });
-            
-            contact_rec.setValue({fieldId: 'company',value:company_id,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'entityid',value:con_data.name,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'email',value:con_data.email,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'phone',value:con_data.phone,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'mobilephone',value:con_data.mobilePhone,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'fax',value:con_data.fax,ignoreFieldChange: true});
-            contact_rec.setValue({fieldId: 'custentity_sf_id',value:con_data.id,ignoreFieldChange: true});
-            contact_rec.setText({fieldId: 'custentity_sf_bu',text:con_data.BU,ignoreFieldChange: true});
-            if(con_data.mailingAddress!=null)
-                add_addressbook(contact_rec,con_data.mailingAddress,0,true,true);
-            
-            
-            var contact_rec_id=contact_rec.save({
-                enableSourcing: false,
-                ignoreMandatoryFields: true
-            });
-       
-            account_data.contacts.push({
-                id:contact_rec_id,
-                sf_id:con_data.id,
-                name:con_data.name
-            });
+                var contact_rec=record.create({
+                    type: 'contact',
+                    isDynamic: false,                       
+                });
+                
+                contact_rec.setValue({fieldId: 'company',value:company_id,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'entityid',value:con_data.name,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'email',value:con_data.email,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'phone',value:con_data.phone,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'mobilephone',value:con_data.mobilePhone,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'fax',value:con_data.fax,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'custentity_sf_id',value:con_data.id,ignoreFieldChange: true});
+                contact_rec.setText({fieldId: 'custentity_sf_bu',text:con_data.BU,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'title',value:con_data.job_title,ignoreFieldChange: true});
+                if(con_data.mailingAddress!=null)
+                    add_addressbook(contact_rec,con_data.mailingAddress,0,true,true);
+                
+                
+                var contact_rec_id=contact_rec.save({
+                    enableSourcing: false,
+                    ignoreMandatoryFields: true
+                });
+           
+                account_data.contacts.push({
+                    id:contact_rec_id,
+                    sf_id:con_data.id,
+                    name:con_data.name,
+                    status:'success',
+                    error_msg:''
+                });
+            } catch (err) {
+                account_data.contacts.push({
+                    id:'',
+                    sf_id:con_data.id,
+                    name:con_data.name,
+                    status:'fail',
+                    error_msg:err.message
+                });
+                
+            }
+          
         }
+    }
+    function add_SalesRep(opp_rec,data){
+        var em_id=search_sf_employee(data.opp.ownerId);
+        if(em_id!=''){
+            opp_rec.insertLine({sublistId: 'salesteam',line: 0});
+            opp_rec.setSublistValue({sublistId: 'salesteam',fieldId: 'contribution',line: 0,value: 100}); 
+            opp_rec.setSublistValue({sublistId: 'salesteam',fieldId: 'salesrole',line: 0,value: -2}); //Sales Rep
+            opp_rec.setSublistValue({sublistId: 'salesteam',fieldId: 'isprimary',line: 0,value: true}); 
+            opp_rec.setSublistValue({sublistId: 'salesteam',fieldId: 'employee',line: 0,value: em_id}); 
+        }       
+
+    }
+    function search_sf_employee(id){
+        var employee_id='';
+        if(id==''|| id==null|| id==undefined){
+            return employee_id;
+        }
+
+        var employeeSearchObj = search.create({
+            type: "employee",
+            filters:
+            [
+               ["custentity_sf_id","startswith",id]
+            ],
+            columns:
+            [             
+               search.createColumn({
+                  name: "entityid",
+                  sort: search.Sort.ASC,
+                  label: "Name"
+               }),            
+            ]
+         });
+       
+         employeeSearchObj.run().each(function(result){
+            employee_id=result.id;
+            return true;
+         });
+
+         return employee_id;
     }
     return {     
         get: doGet,
