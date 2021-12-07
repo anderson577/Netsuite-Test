@@ -123,6 +123,7 @@
                     opp_rec.setValue({fieldId: 'accountnumber',value:data.bankaccount,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'custentity2',value:data.bankcode,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'custentity13',value:data.abbreviation,ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'parent',value:data.parent_ns_id,ignoreFieldChange: true});
                     addresss(opp_rec,data);
                     add_SalesRep(opp_rec,data);
 
@@ -173,7 +174,7 @@
                     type: 'customrecord_sf_opportunity',
                     isDynamic: true,                       
                 });
-                opportunity_rec.setValue({fieldId: 'name',value:data.opp.name,ignoreFieldChange: true});
+                opportunity_rec.setValue({fieldId: 'name',value:data.opp.name+'('+data.opp.closeDate+')',ignoreFieldChange: true});
                 opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_id',value:data.opp.id,ignoreFieldChange: true});
                 opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_acc',value:relation_rec.id,ignoreFieldChange: true});
              
@@ -201,67 +202,86 @@
 
 
              }else{
-                relat_data={
-                    cus_status:'old',                   
-                    id:cus_id                  
-                }; 
+               if(cus_id!==''){
+                    var cus_rec=record.load({
+                        type: 'customer',
+                        id: cus_id,
+                        isDynamic: false
+                    }) ;
+                    relat_data={
+                        cus_status:'old',                   
+                        id:cus_id ,
+                        entityid:cus_rec.getValue('entityid'),
+                        stage:cus_rec.getValue('stage'),                 
+                    }; 
 
-                var opportunity_id='';
-                var customrecord_sf_opportunitySearchObj = search.create({
-                    type: "customrecord_sf_opportunity",
-                    filters:
-                    [
-                       ["custrecord_sf_opp_id","is",data.opp.id]
-                    ],
-                    columns:
-                    [
-                       search.createColumn({
-                          name: "name",
-                          sort: search.Sort.ASC,
-                          label: "Name"
-                       }),
-                       search.createColumn({name: "custrecord_sf_opp_id", label: "SALESFORCE OPPORTUNITY ID"})
-                    ]
-                 });
-                 customrecord_sf_opportunitySearchObj.run().each(function(result){
-                    opportunity_id=result.id;
-                    return true;
-                 });
-                var opportunity_rec;
-                if(opportunity_id==''){
-                    opportunity_rec=record.create({
-                        type: 'customrecord_sf_opportunity',
-                        isDynamic: true,                       
-                    }); 
-                }else{
-                    opportunity_rec=record.load({
-                        type: 'customrecord_sf_opportunity',
-                        id:opportunity_id,
-                        isDynamic: true,                       
-                    }); 
-                }
-            
-                opportunity_rec.setValue({fieldId: 'name',value:data.opp.name,ignoreFieldChange: true});
-                opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_id',value:data.opp.id,ignoreFieldChange: true});
-                opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_acc',value:sf_account_id,ignoreFieldChange: true});
-             
-                opportunity_rec.save({
-                    enableSourcing: false,
-                    ignoreMandatoryFields: true
-                });  
-              
+                    var opportunity_id='';
+                    var customrecord_sf_opportunitySearchObj = search.create({
+                        type: "customrecord_sf_opportunity",
+                        filters:
+                        [
+                        ["custrecord_sf_opp_id","is",data.opp.id]
+                        ],
+                        columns:
+                        [
+                        search.createColumn({
+                            name: "name",
+                            sort: search.Sort.ASC,
+                            label: "Name"
+                        }),
+                        search.createColumn({name: "custrecord_sf_opp_id", label: "SALESFORCE OPPORTUNITY ID"})
+                        ]
+                    });
+                    customrecord_sf_opportunitySearchObj.run().each(function(result){
+                        opportunity_id=result.id;
+                        return true;
+                    });
+                    var opportunity_rec;
+                    if(opportunity_id==''){
+                        opportunity_rec=record.create({
+                            type: 'customrecord_sf_opportunity',
+                            isDynamic: true,                       
+                        }); 
+                    }else{
+                        opportunity_rec=record.load({
+                            type: 'customrecord_sf_opportunity',
+                            id:opportunity_id,
+                            isDynamic: true,                       
+                        }); 
+                    }
+                
+                    opportunity_rec.setValue({fieldId: 'name',value:data.opp.name+'('+data.opp.closeDate+')',ignoreFieldChange: true});
+                    opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_id',value:data.opp.id,ignoreFieldChange: true});
+                    opportunity_rec.setValue({fieldId: 'custrecord_sf_opp_acc',value:sf_account_id,ignoreFieldChange: true});
+                
+                    opportunity_rec.save({
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    });  
+                
 
-                log.debug('opportunity_rec',opportunity_rec.id);
+                    log.debug('opportunity_rec',opportunity_rec.id);
 
 
+                    var response_data={
+                        status:'success',                                
+                        cusdata:{
+                            relat_data:relat_data,
+                            account_data:account_data
+                        },
+                        error_msg:''
+                    }; 
+               }else{
                 var response_data={
-                    status:'success',                                
+                    status:'fail',                                
                     cusdata:{
-                        relat_data:relat_data,
-                        account_data:account_data
+                        relat_data:[],
+                        account_data:[]
                     },
-                    error_msg:''
+                    error_msg:'該顧客可能已刪除!'
                 }; 
+               }
+              
                 log.debug('response_data',response_data);
 
                 return  response_data;

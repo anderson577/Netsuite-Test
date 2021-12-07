@@ -88,6 +88,9 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                     total:rec.getValue('total'),
                     gui:rec.getValue('custbody1'),
                     gui_date:rec.getText('custbody10'),
+                    startdate:rec.getText('startdate'),
+                    enddate:rec.getText('enddate'),
+                    memo:rec.getValue('memo'),
                     itemlist:item_L
                 } }; 
             

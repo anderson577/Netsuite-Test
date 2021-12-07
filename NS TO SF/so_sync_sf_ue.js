@@ -79,6 +79,9 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                     subtotal:rec.getValue('subtotal'),
                     taxtotal:rec.getValue('taxtotal'),
                     total:rec.getValue('total'),
+                    startdate:rec.getText('startdate'),
+                    enddate:rec.getText('enddate'),
+                    memo:rec.getValue('memo'),
                     itemlist:item_L
                 } }; 
                
