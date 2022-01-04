@@ -6,7 +6,13 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
  function(record, runtime, search, serverWidget, format,https,SF) {
 
     function beforeLoad(context) {
-     
+        if (context.type == "create" || context.type == "copy"){ 
+            var rec = context.newRecord;
+            rec.setValue({fieldId: 'custbody_sf_connect_status',value:null,ignoreFieldChange: true});
+            rec.setValue({fieldId: 'custbody_sf_connect_message',value:null,ignoreFieldChange: true});
+            rec.setValue({fieldId: 'custbody_sf_id',value:null,ignoreFieldChange: true});
+
+        }
     }
 
     function beforeSubmit(context) {
@@ -31,6 +37,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
             
             var sf_id = rec.getValue('custbody_sf_id');
             var sf_account = rec.getValue('custbody_sf_account');
+            log.debug('sf_account', sf_account);
             if(sf_account!=''){
 
                 var item_L=[];

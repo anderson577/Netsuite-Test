@@ -17,7 +17,9 @@
           
             log.debug('context',JSON.stringify(context));
             var data=JSON.parse(JSON.stringify(context));
-
+            if(data.BU=='ISV'){
+                data.BU='Products';
+            }
             var ns_id=data.ns_id;
             var isdelete=data.isdelete;
             var id=data.id;
@@ -66,16 +68,39 @@
                         isDynamic: false,                       
                     });
                 }else{
-                    var contact_rec=record.load({
-                        type: 'contact',
-                        id:ns_id,
-                        isDynamic: false,                       
-                    });
+                    var con_id='';
+                    var contactSearchObj = search.create({
+                        type: "contact",
+                        filters:
+                        [
+                           ["internalid","anyof",ns_id]
+                        ],
+                        columns:
+                        [                          
+                        ]
+                     });
+                 
+                     contactSearchObj.run().each(function(result){
+                        con_id=result.id;
+                        return true;
+                     });
+                    if(con_id!=''){
+                        var contact_rec=record.load({
+                            type: 'contact',
+                            id:con_id,
+                            isDynamic: false,                       
+                        });
+                    }else{
+                        var contact_rec=record.create({
+                            type: 'contact',
+                            isDynamic: false,                       
+                        });
+                    }                   
                 } 
     
-    
+                var entityid=data.name+' ('+data.BU+')';             
                 contact_rec.setValue({fieldId: 'company',value:data.company_id,ignoreFieldChange: true});
-                contact_rec.setValue({fieldId: 'entityid',value:data.name,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'entityid',value:entityid,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'email',value:data.email,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'phone',value:data.phone,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'mobilephone',value:data.mobilePhone,ignoreFieldChange: true});

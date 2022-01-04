@@ -19,24 +19,25 @@ function(currentRecord, record, search, url, log, runtime) {
             var entitystatus=objRecord.getValue({ fieldId: 'entitystatus' });
             log.debug("entitystatus", entitystatus);
             if(entitystatus!=''){
+                var customerstatus_rec = record.load({
+                    type: 'customerstatus',
+                    id: entitystatus,
+                    isDynamic: false
+                });
+                var stage=customerstatus_rec.getValue('stage');
+                log.debug("stage", stage); 
+                objRecord.setValue({ fieldId: 'custentity_check_customer',value:stage=='CUSTOMER'?'Y':''}); 
                 var user_roleId=runtime.getCurrentUser().roleId;                     
-                if(user_roleId!='customrole1003' && user_roleId!='customrole1005' && user_roleId!='administrator'){//NextLink CFO,Consultant-Full Access,Administrator
-                    var customerstatus_rec = record.load({
-                        type: 'customerstatus',
-                        id: entitystatus,
-                        isDynamic: false
-                    });
-                    var stage=customerstatus_rec.getValue('stage');
-                    log.debug("stage", stage);        
+                if(user_roleId!='customrole1003' && user_roleId!='customrole1005' && user_roleId!='administrator'){//NextLink CFO,Consultant-Full Access,Administrator                       
                     if(stage=='CUSTOMER'){
                         Ext.Msg.show({title: '提醒',width: 250,buttons: Ext.Msg.OK, msg:'請財會人員轉客戶!'});
                         return false;                               
                     }
-                }                     
+                }                                     
             }              
              
         }catch(e){
-            log.debug("fieldChanged_error", e);
+            log.debug("saveRecord_error", e);
         }  
         
         return true;
@@ -48,8 +49,8 @@ function(currentRecord, record, search, url, log, runtime) {
   
    
     function fieldChanged(context) {
-      
      
+        
     }
     
   

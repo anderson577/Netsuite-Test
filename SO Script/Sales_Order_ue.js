@@ -6,7 +6,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
  function(record, runtime, search, serverWidget, format,https,SF) {
 
     function beforeLoad(context) {
-        log.debug('context', context);
+        //log.debug('context', context);
         log.debug('executionContext', runtime.executionContext);
         if (context.type == "copy"){        
 

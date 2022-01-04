@@ -6,7 +6,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
  function(record, runtime, search, serverWidget, format,https,SF) {
 
     function beforeLoad(context) {
-        if (context.type == "create"){ 
+        if (context.type == "create" || context.type == "copy"){ 
             var rec = context.newRecord;
             rec.setValue({fieldId: 'custbody_sf_connect_status',value:null,ignoreFieldChange: true});
             rec.setValue({fieldId: 'custbody_sf_connect_message',value:null,ignoreFieldChange: true});

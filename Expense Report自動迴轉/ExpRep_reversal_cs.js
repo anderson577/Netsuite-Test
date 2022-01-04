@@ -82,7 +82,7 @@ function( currentRecord, record, search, url, dialog, runtime) {
         div.setAttribute("style", "width:100%;height:100%;top:0;left:0;position:fixed;display:block;opacity:0.7;background-color:#fff;z-index:99;text-align:center;");       
         var img = document.createElement("img");
         img.setAttribute("style", "position:absolute;top:45%;left:43%;z-index:100;width:10%;");       
-        img.setAttribute("src", "https://4631466-sb1.app.netsuite.com/core/media/media.nl?id=324&c=4631466_SB1&h=1YZ6RB0nke1tzfbd17AbU_zPK2j6OdOAXHoQVqxixNY8-Nht");  
+        img.setAttribute("src", "https://4631466.app.netsuite.com/core/media/media.nl?id=338&c=4631466&h=CGENO9ikZrqmPg2-0PauwtEcJhGn_R66Kc1IWbLx0QsEJHoS");  
         img.setAttribute("alt", "Loading...");          
         div.appendChild(img);                              
         html.appendChild(div);

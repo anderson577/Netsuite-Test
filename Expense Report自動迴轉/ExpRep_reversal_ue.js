@@ -13,11 +13,11 @@ function(runtime,record,search,serverWidget,format) {
         var rec = context.newRecord;
       
         if (context.type === context.UserEventType.VIEW &&runtime.executionContext === runtime.ContextType.USER_INTERFACE) { 
-            var approvalstatus= rec.getText('approvalstatus');
-            log.debug('approvalstatus',approvalstatus);
+            var statusRef= rec.getText('statusRef');
+            log.debug('statusRef',statusRef);
             var payments= rec.getValue('payments');
             log.debug('payments',payments);
-            if(approvalstatus=='Approved' && payments=='F'){ 
+            if(statusRef=='approvedByAcct' && payments=='F'){ 
     
                 form.addButton({
                     id: 'custpage_reversal',

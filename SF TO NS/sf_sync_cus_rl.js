@@ -17,6 +17,9 @@
           
             log.debug('context',JSON.stringify(context));
             var data=JSON.parse(JSON.stringify(context));
+            if(data.BU=='ISV'){
+                data.BU='Products';
+            }
             var customrecord_sf_accountSearchObj = search.create({
                 type: "customrecord_sf_account",
                 filters:
@@ -47,17 +50,23 @@
              });
 
              var relat_data={},account_data={contacts:[]};
+             var subsidary=search_Subsidiary(data.subsidary);
              if(relation_id==''){
+                var filters=[
+                    ["altname","is",data.select_name],                  
+                    "AND", 
+                    ["msesubsidiary.namesel","anyof",subsidary]
+                ];
+                if(data.vat_reg=='N/A'||data.vat_reg==''){
+                    filters.push("AND");
+                    filters.push([["vatregnumber","is","N/A"],"OR",["vatregnumber","isempty",""]]);                    
+                }else{
+                    filters.push("AND");
+                    filters.push(["vatregnumber","is",data.vat_reg]);   
+                }
                 var customerSearchObj = search.create({
                     type: "customer",
-                    filters:
-                    [
-                       ["companyname","is",data.name], 
-                       "AND", 
-                       ["vatregnumber","is",data.vat_reg], 
-                       "AND", 
-                       ["msesubsidiary.name","is",data.subsidary]
-                    ],
+                    filters:filters,
                     columns:
                     [
                         search.createColumn({name: "entityid", label: "ID"}),
@@ -67,24 +76,25 @@
                             label: "Name"
                         }),
                         search.createColumn({
-                            name: "name",
+                            name: "namenohierarchy",
                             join: "mseSubsidiary",
-                            label: "Name"
+                            label: "Name (no hierarchy)"
                         }),
                         search.createColumn({name: "stage", label: "Stage"}),
                         search.createColumn({name: "vatregnumber", label: "Tax Number"})                
                     ]
                  });
-                 var cus_id='',cus_name,cus_entityid,cus_subsidiary,cus_stage,cus_vatregnumber;
+                 var cus_id='',cus_name,cus_entityid,cus_subsidiary,cus_stage,cus_vatregnumber,cus_recordType='';
                  customerSearchObj.run().each(function(result){
                     log.debug('result',result);
-                    cus_id=result.id;           
+                    cus_id=result.id;
+                    cus_recordType=result.recordType;        
                     cus_entityid=result.getValue('entityid');
                     cus_name=result.getValue('altname');
                     cus_subsidiary=result.getValue({
-                        name: "name",
+                        name: "namenohierarchy",
                         join: "mseSubsidiary",
-                        label: "Name"
+                        label: "Name (no hierarchy)"
                     });
                     cus_stage=result.getValue('stage');
                     cus_vatregnumber=result.getValue('vatregnumber');
@@ -93,17 +103,22 @@
                
                 
                  if(cus_id!=''){
+                    var old_cus_rec = record.load({
+                        type: 'customer',
+                        id: cus_id,
+                        isDynamic: false
+                    });
                
                     relat_data={
                         cus_status:'old',                   
                         id:cus_id,
-                        entityid:cus_entityid,
+                        entityid:old_cus_rec.getValue('entityid'),
                         name:cus_name,
                         subsidiary:cus_subsidiary,
                         stage:cus_stage,
                         vatregnumber:cus_vatregnumber
                     }; 
-                    add_contact(cus_id,data,account_data)                 
+                    add_contact(cus_id,cus_recordType,data,account_data)                 
                                  
                  }else{
                     var opp_rec=record.create({
@@ -113,7 +128,7 @@
                     opp_rec.setValue({fieldId: 'isperson',value:'F',ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'probability',value:data.opp.probability,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'companyname',value:data.name,ignoreFieldChange: true});
-                    opp_rec.setValue({fieldId: 'subsidiary',value:search_Subsidiary(data.subsidary),ignoreFieldChange: true});
+                    opp_rec.setValue({fieldId: 'subsidiary',value:subsidary,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'phone',value:data.phone,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'leadsource',value:search_campaign(data.opp.leadSource),ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'vatregnumber',value:data.vat_reg,ignoreFieldChange: true});
@@ -134,7 +149,7 @@
              
                     cus_id=opp_rec_id;
 
-                    add_contact(opp_rec_id,data,account_data);
+                    add_contact(opp_rec_id,'prospect',data,account_data);
                    
 
                     var opp_new_rec=record.load({
@@ -142,12 +157,16 @@
                         id: opp_rec_id,
                         isDynamic: false
                     }) ;
-
+                    var opp_altname = search.lookupFields({
+                        type: 'customer',
+                        id: opp_rec_id,
+                        columns: ['altname']
+                    });
                     relat_data={
                         cus_status:'new',                    
                         id:opp_new_rec.id,
                         entityid:opp_new_rec.getValue('entityid'),
-                        name:opp_new_rec.getValue('companyname'),
+                        name:opp_altname.altname,
                         subsidiary:opp_new_rec.getText('subsidiary'),
                         stage:'Opportunitites',
                         vatregnumber:opp_new_rec.getValue('vatregnumber')
@@ -203,18 +222,43 @@
 
              }else{
                if(cus_id!==''){
+                    var relation_rec=record.load({
+                        type: 'customrecord_sf_account',
+                        id: sf_account_id,
+                        isDynamic: false,                       
+                    });                  
+                    relation_rec.setValue({fieldId: 'custrecord_sf_acc_name',value:data.name,ignoreFieldChange: true});                  
+                    relation_rec.setText({fieldId: 'custrecord_sf_acc_bu',text:data.BU,ignoreFieldChange: true});
+                    relation_rec.setValue({fieldId: 'name',value:data.name+'('+data.BU+')',ignoreFieldChange: true});
+                    relation_rec.save({
+                        enableSourcing: false,
+                        ignoreMandatoryFields: true
+                    });  
+                    log.debug('relation_rec_id',relation_rec.id);               
+
                     var cus_rec=record.load({
                         type: 'customer',
                         id: cus_id,
                         isDynamic: false
                     }) ;
+                    var stage=cus_rec.getValue('stage');
+                    if(stage=='PROSPECT')stage='Opportunitites';
+                    if(stage=='LEAD')stage='Prospect';
+                    var cus_altname = search.lookupFields({
+                        type: 'customer',
+                        id: cus_id,
+                        columns: ['altname']
+                    });
                     relat_data={
                         cus_status:'old',                   
                         id:cus_id ,
                         entityid:cus_rec.getValue('entityid'),
-                        stage:cus_rec.getValue('stage'),                 
+                        name:cus_altname.altname,
+                        subsidiary:cus_rec.getText('subsidiary'), 
+                        stage:stage,
+                        vatregnumber:cus_rec.getValue('vatregnumber')==''?'N/A':cus_rec.getValue('vatregnumber')                 
                     }; 
-
+                    add_contact(cus_rec.id,cus_rec.type,data,account_data);
                     var opportunity_id='';
                     var customrecord_sf_opportunitySearchObj = search.create({
                         type: "customrecord_sf_opportunity",
@@ -390,18 +434,43 @@
 
 
     }
-    function add_contact(company_id,data,account_data){
+    function add_contact(company_id,recordType,data,account_data){
         for(var i=0;i<data.contacts.length;i++){
             var con_data=data.contacts[i];
+            if(con_data.BU=='ISV'){
+                con_data.BU='Products';
+            }
             try {               
 
-                var contact_rec=record.create({
-                    type: 'contact',
-                    isDynamic: false,                       
+                var cus_rec=record.load({
+                    type: recordType,
+                    id: company_id,
+                    isDynamic: false
                 });
+                var linecount = cus_rec.getLineCount({ sublistId:'contactroles'});
+                var contact_id='',entityid=con_data.name+' ('+con_data.BU+')'; 
+                for (var i = 0; i < linecount; i++){              
+                    var contactname=  cus_rec.getSublistValue({sublistId: 'contactroles', fieldId: 'contactname', line: i});
+                    if(contactname==entityid){                      
+                        contact_id=cus_rec.getSublistValue({sublistId: 'contactroles', fieldId: 'contact', line: i});
+                    }
+                 }
+                if(contact_id==''){
+                    var contact_rec=record.create({
+                        type: 'contact',
+                        isDynamic: false,                       
+                    });
+                }else{
+                    var contact_rec=record.load({
+                        type: 'contact',
+                        id: contact_id,
+                        isDynamic: false,                       
+                    });
+                } 
+               
                 
                 contact_rec.setValue({fieldId: 'company',value:company_id,ignoreFieldChange: true});
-                contact_rec.setValue({fieldId: 'entityid',value:con_data.name,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'entityid',value:entityid,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'email',value:con_data.email,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'phone',value:con_data.phone,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'mobilephone',value:con_data.mobilePhone,ignoreFieldChange: true});
@@ -426,13 +495,23 @@
                     error_msg:''
                 });
             } catch (err) {
-                account_data.contacts.push({
-                    id:'',
-                    sf_id:con_data.id,
-                    name:con_data.name,
-                    status:'fail',
-                    error_msg:err.message
+                log.error({
+                    title: 'Post',
+                    details: JSON.stringify({
+                        id:'',
+                        sf_id:con_data.id,
+                        name:con_data.name,
+                        status:'fail',
+                        error_msg:err.message
+                    })
                 });
+                // account_data.contacts.push({
+                //     id:'',
+                //     sf_id:con_data.id,
+                //     name:con_data.name,
+                //     status:'fail',
+                //     error_msg:err.message
+                // });
                 
             }
           

@@ -6,7 +6,13 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
  function(record, runtime, search, serverWidget, format,https,SF) {
 
     function beforeLoad(context) {
-     
+        if (context.type == "create" || context.type == "copy"){ 
+            var rec = context.newRecord;
+            rec.setValue({fieldId: 'custbody_sf_connect_status',value:null,ignoreFieldChange: true});
+            rec.setValue({fieldId: 'custbody_sf_connect_message',value:null,ignoreFieldChange: true});
+            rec.setValue({fieldId: 'custbody_sf_id',value:null,ignoreFieldChange: true});
+
+        }
     }
 
     function beforeSubmit(context) {
@@ -133,6 +139,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                 subtotal:rec.getValue('subtotal'),
                 taxtotal:rec.getValue('taxtotal'),
                 total:rec.getValue('total'),
+                memo:rec.getValue('memo'),
                 itemlist:item_L,
                 expenselist:expense_L,
                 addList:addList,
