@@ -166,6 +166,7 @@
         subrec2.setValue({fieldId: 'addr1',value: Address.address});
         subrec2.setValue({fieldId: 'city',value: Address.city});
         subrec2.setValue({fieldId: 'zip',value: Address.zip});
+        subrec2.setValue({fieldId: 'custrecord_stateprovince',value: Address.state});
 
 
     }

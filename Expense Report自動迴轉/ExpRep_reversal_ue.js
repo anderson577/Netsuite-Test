@@ -19,6 +19,7 @@ function(runtime,record,search,serverWidget,format) {
             log.debug('payments',payments);
             if(statusRef=='approvedByAcct' && payments=='F'){ 
     
+            
                 form.addButton({
                     id: 'custpage_reversal',
                     label: '迴轉',

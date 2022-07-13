@@ -11,7 +11,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
         var request  = context.request;
         var response = context.response;
         // log.debug('context',context)
-        // log.debug('runtime', runtime.getCurrentScript().getParameter({name: 'custscript_iv_labor_acc'}))
+        //log.debug('runtime', runtime.getCurrentScript().getParameter({name: 'custscript_iv_tc_araccount'}))
 
         if (request.method === 'GET'){
             
@@ -368,10 +368,12 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
             type: config.Type.COMPANY_PREFERENCES
         });
 
+        var tc_account = runtime.getCurrentScript().getParameter({name: 'custscript_iv_tc_araccount'});
+
         var filters = [
             ["type","anyof", configRecObj.getValue('custscript_iv_tc_type_id')], 
             "AND", 
-            ["account","anyof","1419"], 
+            ["account","anyof",tc_account], 
             "AND", 
             ["amountremainingisabovezero","is","T"], 
             "AND", 

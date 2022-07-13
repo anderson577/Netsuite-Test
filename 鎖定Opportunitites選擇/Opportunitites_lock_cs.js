@@ -24,19 +24,20 @@ function(currentRecord, record, search, url, log) {
                        ["internalid","anyof",entity]
                     ],
                     columns:
-                    [                          
+                    [ 
+                      search.createColumn({name: "entitystatus", label: "Status"})                         
                     ]
                  });
-                var entitytype='';
+                var entitystatus='';
                  customerSearchObj.run().each(function(result){
                     log.debug("result", result);
-                    entitytype=result.recordType;
+                    entitystatus=result.getValue('entitystatus');
                     return true;
                  });
-                 log.debug("entitytype", entitytype);
+                 log.debug("entitystatus", entitystatus);
     
-                 if(entitytype!='customer'){
-                    Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect請待財會轉客戶才能選擇!'});
+                 if(entitystatus!=13){
+                    Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect請待財會轉客戶-Win才能選擇!'});
                     return false;
                  }else{
                     objRecord.setValue({ fieldId: 'custbody_costomer_block', value: 'Y', ignoreFieldChange: true});

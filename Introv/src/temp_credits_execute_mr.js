@@ -320,7 +320,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/email', '
 
                 custc_rec.setValue({
                     fieldId: "aracct",
-                    value:  1419,
+                    value:  configRecObj.getValue('custscript_iv_tc_araccount'),
                     ignoreFieldChange: false
                 });
 

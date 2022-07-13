@@ -1,37 +1,47 @@
 /**
  * @NApiVersion 2.x
  * @NScriptType Suitelet
- * @NModuleScope SameAccount
  */
 
 define([ 'N/record', 'N/search', 'N/file', 'N/render', 'N/log', 'N/format', 'N/https', 'N/url', 'N/runtime'],
-function( record, search, file, render, log, format, https, url, runtime) {
+function(record, search, file, render, log, format, https, url, runtime) {
     function onRequest(context) {
-    	
+    	      
         var id = context.request.parameters.id;
-        var type = context.request.parameters.type;     
+        var type = context.request.parameters.type; 
+        log.debug('id',id);
+        log.debug('type',type);    
 
         try {
             var exprept_rec = record.load({type: type ,id: id,isDynamic: true});
-            var entity=exprept_rec.getValue('entity');
+            var entity_id=exprept_rec.getValue('entity');
+            log.debug('entity_id',entity_id);
             var subsidiary=exprept_rec.getValue('subsidiary');
             var subsidiary_t=exprept_rec.getText('subsidiary');
             var employee_rec = search.lookupFields({
                 type: 'employee',
-                id: entity,
+                id: entity_id,
                 columns: ['department','class']
             });
+            log.debug('employee_rec',employee_rec);
             var tranid=exprept_rec.getValue('tranid');
             var total=exprept_rec.getValue('total');
             var currency=exprept_rec.getValue('expensereportcurrency');
+            log.debug('total',total);
+            log.debug('subsidiary_t',subsidiary_t);
     
+         
+       
             var payment_rec = record.create({
-                type: 'vendorpayment',
+                type: 'salesorder',
                 isDynamic: true,
                 defaultValues: {
-                    entity: entity
+                    entity: entity_id,                  
                 }           
             });
+
+       
+
             payment_rec.setValue({fieldId: 'apacct',value:search_account('220900'),ignoreFieldChange: true});      
             var account='';
             if(subsidiary_t=='博弘雲端科技股份有限公司')account=search_account('110610');
@@ -137,7 +147,7 @@ function( record, search, file, render, log, format, https, url, runtime) {
 
          return account_id;
     }
-   
+  
 
     return {
         onRequest: onRequest

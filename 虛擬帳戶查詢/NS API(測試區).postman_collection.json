@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "43c74f38-d36e-41a2-ad7e-01090bc81263",
+		"name": "NS API(測試區)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17789103"
+	},
+	"item": [
+		{
+			"name": "NS Cus vacc number(測試區)",
+			"request": {
+				"auth": {
+					"type": "oauth1",
+					"oauth1": [
+						{
+							"key": "tokenSecret",
+							"value": "a43f0e95e8d5dd5d465caec195a1faadd7ea8e01f0410f08cf8b639de21327b1",
+							"type": "string"
+						},
+						{
+							"key": "token",
+							"value": "9f888bb67b4f1349e3cf8db61f88c7326f28f2f4966460a7b0ae65d5479f25b8",
+							"type": "string"
+						},
+						{
+							"key": "consumerSecret",
+							"value": "6679bfb1410bef58bf7476a127c296073cee19d4d00f515960e6cb10da4c98ec",
+							"type": "string"
+						},
+						{
+							"key": "consumerKey",
+							"value": "9ffb3ab536f7c87d5abfdb1038023c03794b1514706c091817f95e1ef0e68188",
+							"type": "string"
+						},
+						{
+							"key": "addEmptyParamsToSign",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "realm",
+							"value": "4631466_SB1",
+							"type": "string"
+						},
+						{
+							"key": "addParamsToHeader",
+							"value": true,
+							"type": "boolean"
+						},
+						{
+							"key": "includeBodyHash",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "signatureMethod",
+							"value": "HMAC-SHA256",
+							"type": "string"
+						},
+						{
+							"key": "version",
+							"value": "1.0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"entityid_l\":[\"C012219\",\"C009870\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://4631466-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_api_get_vacc_rl&deploy=customdeploy_api_get_vacc_rl",
+					"protocol": "https",
+					"host": [
+						"4631466-sb1",
+						"restlets",
+						"api",
+						"netsuite",
+						"com"
+					],
+					"path": [
+						"app",
+						"site",
+						"hosting",
+						"restlet.nl"
+					],
+					"query": [
+						{
+							"key": "script",
+							"value": "customscript_api_get_vacc_rl"
+						},
+						{
+							"key": "deploy",
+							"value": "customdeploy_api_get_vacc_rl"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -17,8 +17,8 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                     // ["custentity_sf_id","isempty",""], 
                     // "AND", 
                     ["isinactive","is","F"],
-                    "AND", 
-                    ["parentcustomer.entityid","isnotempty",""]
+                    // "AND", 
+                    // ["parentcustomer.entityid","isempty",""]
                 ],
                 columns:
                 [                   
@@ -34,6 +34,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
         function map(context){
             //log.debug('In Map Stage');
           var searchResult = JSON.parse(context.value);
+          log.debug('searchResult',searchResult);
           try{
             var objRecord = record.load({
                 type: searchResult.recordType, 
@@ -47,7 +48,8 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
          
           
           }catch(e){
-          
+            log.error('error-searchResult',searchResult);
+            log.error("error",e);
           }
            
             
