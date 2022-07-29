@@ -40,7 +40,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
             var token_url ='https://'+account+'/services/oauth2/token?grant_type=password&client_id='+consumer_key+'&client_secret='+consumer_secret+'&username='+username+'&password='+password;
           //  log.debug('token_url', token_url); 
             var response = https.post({url: token_url});
-            var token = JSON.parse(response.body).access_token;
+            var token = JSON.parse(response.body).access_token;//'00DBI0000000UPV!AQEAQJwqnG3FSlelNlevk_646ygntYepqrj1SxSldFgeJ8UvbTE3TjJdcI21zLyjcqeZa.f3kKb6hs_TJtCBGmpXQbe2ZJLf';
           //  log.debug('token', token)
             if(token!=null&&token!=''&&token!=undefined){
                 var api_url = 'https://'+account+'/services/apexrest/'+functionname;
@@ -160,7 +160,9 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
             } }; 
            
             log.debug('so_data', data); 
-            var response =JSON.parse(posttoSF(data,'NS_SO_API'));
+            var response_str=posttoSF(data,'NS_SO_API');
+            log.debug('response_str', response_str); 
+            var response =JSON.parse(response_str);
             log.debug('so_response', response); 
             rec.setValue({fieldId: 'custbody_sf_connect_status',value:response.status,ignoreFieldChange: true});
             rec.setValue({fieldId: 'custbody_sf_connect_message',value:response.error_msg,ignoreFieldChange: true});

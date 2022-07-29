@@ -133,11 +133,13 @@
                         isDynamic: false,                       
                     });
                     opp_rec.setValue({fieldId: 'isperson',value:'F',ignoreFieldChange: true});
-                    opp_rec.setValue({fieldId: 'probability',value:data.opp.probability,ignoreFieldChange: true});
+                    if(data.opp!=null&&data.opp!=undefined&&data.opp!='')
+                        opp_rec.setValue({fieldId: 'probability',value:data.opp.probability,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'companyname',value:data.name,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'subsidiary',value:subsidary,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'phone',value:data.phone,ignoreFieldChange: true});
-                    opp_rec.setValue({fieldId: 'leadsource',value:search_campaign(data.opp.leadSource),ignoreFieldChange: true});
+                    if(data.opp!=null&&data.opp!=undefined&&data.opp!='')
+                        opp_rec.setValue({fieldId: 'leadsource',value:search_campaign(data.opp.leadSource),ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'vatregnumber',value:data.vat_reg,ignoreFieldChange: true});
                     opp_rec.setText({fieldId: 'currency',text:data.currency_t,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'comments',value:data.description,ignoreFieldChange: true});
@@ -150,7 +152,8 @@
                     opp_rec.setValue({fieldId: 'custentity13',value:data.abbreviation,ignoreFieldChange: true});
                     opp_rec.setValue({fieldId: 'parent',value:data.parent_ns_id,ignoreFieldChange: true});
                     addresss(opp_rec,data);
-                    add_SalesRep(opp_rec,data);
+                    if(data.opp!=null&&data.opp!=undefined&&data.opp!='')
+                        add_SalesRep(opp_rec,data);
 
                     var opp_rec_id=opp_rec.save({
                         enableSourcing: false,

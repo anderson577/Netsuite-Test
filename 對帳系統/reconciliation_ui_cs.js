@@ -97,6 +97,7 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
         
         }
     }
+    var current_account='';
     function fieldChanged(context) {
         window.onbeforeunload = null; 
         var current_rec = context.currentRecord; 
@@ -108,9 +109,9 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
             var customer = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_customer',line:index });
             var currency = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_currency',line:index });
             var account = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_company_account',line:index });
-           
+            current_account=account;
             var linecount = current_rec.getLineCount({ sublistId: 'custpage_cuslist_reconcili' })
-            var customer_ck='',reconcili_amt=0,currency_ck='',account_ck='';
+            var customer_ck='',reconcili_amt=0,currency_ck='';
             for (var i = 0; i < linecount; i++) {
                 var select_L = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_reconcili_select',line:i });              
                 var deposit_amount = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_balance',line:i }); 
@@ -125,7 +126,7 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
                    
                     if(customer_L!=''&&select_L==true)customer_ck=customer_L;
                     if(currency_L!=''&&select_L==true)currency_ck=currency_L;
-                    if(account_L!=''&&select_L==true)account_ck=account_L;
+                    if(account_L!=''&&select_L==true)current_account=account_L;
                 }
             }              
             //console.log('reconcili_amt',reconcili_amt);
@@ -144,7 +145,7 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
                 }  
                 return;           
             }
-            if(account_ck!=''&&account_ck!=account){
+            if(current_account!=''&&current_account!=account){
                 if(select==true){
                     alert('請選擇相同公司銀行帳戶!');
                     current_rec.setCurrentSublistValue({ sublistId: 'custpage_cuslist_reconcili', fieldId: 'custpage_reconcili_select',value:false});
@@ -277,11 +278,14 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
             } 
             var invoice_amt=0;
            
+            var count=0;
             for(var k in invoice_picks) {
-                invoice_amt+=parseFloat(invoice_picks[k]);         
+                invoice_amt+=parseFloat(invoice_picks[k]);
+                count++;         
             }        
             current_rec.setValue({fieldId: 'custpage_cuslist_invoice_amt',value:invoice_amt,ignoreFieldChange: true});         
-            current_rec.setValue({fieldId: 'custpage_invoice_picks',value:JSON.stringify(invoice_picks),ignoreFieldChange: true});   
+            current_rec.setValue({fieldId: 'custpage_invoice_picks',value:JSON.stringify(invoice_picks),ignoreFieldChange: true});            
+            current_rec.setValue({fieldId: 'custpage_cuslist_datacount',value:count,ignoreFieldChange: true});    
         }
       
     }
@@ -319,7 +323,9 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
         var pageId = pageId;
         var pagesize = 50;
         // var retrieveSearch = runSearch(pagesize, customers, 'SalesOrd');
-        var invoice_data=search_invoice_data(pagesize,pageId,customer);
+        var invoice_trandate_strat = current_rec.getText('custpage_invoice_trandate_strat');
+        var invoice_trandate_end = current_rec.getText('custpage_invoice_trandate_end');     
+        var invoice_data=search_invoice_data(pagesize,pageId,customer,invoice_trandate_strat,invoice_trandate_end);
      
         
         var pageCount = Math.ceil(invoice_data.AllCount / pagesize);
@@ -393,27 +399,35 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
             iv++;
         });
         current_rec.setValue({fieldId: 'custpage_invoice_picks',value:JSON.stringify(invoice_picks),ignoreFieldChange: true});  
-        current_rec.setValue({fieldId: 'custpage_cuslist_datacount',value:iv,ignoreFieldChange: true});  
+        
 
     }
     /** 
     * @param {string} customer
     * @return {[]}      
     */
-     function search_invoice_data(pagesize,pageId,customer){
+     function search_invoice_data(pagesize,pageId,customer,trandate_start,trandate_end){
         if(customer==''){
             return {AllCount:0,list:[]};;
         }
+        var filter=  [
+            ["mainline","is","T"],
+            "AND", 
+            [["name","anyof",customer],"OR",["customer.custentity_parent","anyof",customer]],
+            "AND", 
+            ["status","anyof","CustInvc:A"]
+         ];
+        if(trandate_start!=''&&trandate_start!=null&&trandate_start!=undefined){
+            filter.push("AND");
+            filter.push(["trandate","onorafter",trandate_start]);
+        }
+        if(trandate_end!=''&&trandate_end!=null&&trandate_end!=undefined){
+            filter.push("AND");
+            filter.push(["trandate","onorbefore",trandate_end]);
+        } 
         var transactionSearchObj = search.create({
             type: "invoice",
-            filters:
-            [
-               ["mainline","is","T"],
-               "AND", 
-               [["name","anyof",customer],"OR",["customer.custentity_parent","anyof",customer]],
-               "AND", 
-               ["status","anyof","CustInvc:A"]
-            ],
+            filters:filter,
             columns:
             [
                search.createColumn({
@@ -503,30 +517,45 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
         }
         var reconcili_amt=current_rec.getValue('custpage_select_reconcili_amt');         
         var invoice_amt=current_rec.getValue('custpage_cuslist_invoice_amt');
-        if(invoice_amt>reconcili_amt){
-            alert('發票金額大於剩餘對帳金額!');
+        var fee=current_rec.getValue('custpage_cuslist_fee');
+        if(invoice_amt+fee>reconcili_amt){
+            alert('發票、手續費金額大於剩餘對帳金額!');
             return;
         }         
 
         var entityid=current_rec.getValue('custpage_select_cus');         
         if(entityid!=''&&entityid!=undefined && entityid!=null){
-            var payment_data={reconcili_id:data_list[0],currency:select_currency};
+            var account_L=Account_List();
+            var account_id='';
+            account_L.forEach(function (data){
+                if(data.bank_account==current_account){
+                    account_id=data.account_id;
+                }
+                         
+            }); 
+            var inv_currency='';            
             var pay_list=[];           
             var invoice_picks=JSON.parse(current_rec.getValue('custpage_invoice_picks'));
             for(var k in invoice_picks){
                 var invoice_paymentamount =parseFloat(invoice_picks[k]);
                 var invoice_currency =k.split('@')[1];
                 var invoice_tranid=k.split('@')[0].split('_')[1];
-                if(invoice_currency!=select_currency){
-                    alert('對帳資料與發票不同幣別!');
+                if(inv_currency=='')inv_currency=invoice_currency;
+                if(inv_currency!=invoice_currency){
+                    alert('發票請選擇相同幣別!');
                     return;
                 }
+                // if(invoice_currency!=select_currency){
+                //     alert('對帳資料與發票不同幣別!');
+                //     return;
+                // }
                 pay_list.push({
                     invoice_tranid:invoice_tranid,
                     invoice_paymentamount:invoice_paymentamount,                                    
                 });
 
-            }               
+            }
+            var payment_data={reconcili_id:data_list[0],currency:inv_currency,charge_fee:fee,account_id:account_id};               
             // for (var i = 0; i < linecount; i++) {
             //     var select_L = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_select',line:i });
             //     var invoice_tranid = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_tranid',line:i }); 
@@ -618,12 +647,40 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
 
        return AL;
     }
+    function select_all(context){
+        var current_rec = currentRecord.get();
+        var linecount = current_rec.getLineCount({ sublistId: 'custpage_cuslist_invoice' });
+       
+        var invoice_picks=JSON.parse(current_rec.getValue('custpage_invoice_picks'));
+        for (var i = 0; i < linecount; i++) {        
+                     
+            var tranid = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_tranid',line:i });
+            var currency = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_currency',line:i });
+            var invoice_amountremaining = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_amountremaining',line:i });
+            current_rec.selectLine({sublistId: 'custpage_cuslist_invoice',line: i});
+            current_rec.setCurrentSublistValue({sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_select',value: true,ignoreFieldChange: false}); 
+            current_rec.setCurrentSublistValue({sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_paymentamount',value: parseFloat(invoice_amountremaining),ignoreFieldChange: false});  
+            current_rec.commitLine({sublistId: 'custpage_cuslist_invoice',ignoreRecalc:true});  
+            invoice_picks['id_'+tranid+'@'+currency]=invoice_amountremaining;      
+        } 
+        var invoice_amt=0;
+       
+        for(var k in invoice_picks) {
+            invoice_amt+=parseFloat(invoice_picks[k]);         
+        }        
+        current_rec.setValue({fieldId: 'custpage_cuslist_invoice_amt',value:invoice_amt,ignoreFieldChange: true});         
+        current_rec.setValue({fieldId: 'custpage_invoice_picks',value:JSON.stringify(invoice_picks),ignoreFieldChange: true});   
+
+
+      
+    }
     return {
         pageInit: pageInit,
         fieldChanged: fieldChanged,
         customerdeposit:customerdeposit,
         sublistChanged: sublistChanged,
         filter:filter,
-        customerpayment:customerpayment,        
+        customerpayment:customerpayment,
+        select_all:select_all        
     };
 });

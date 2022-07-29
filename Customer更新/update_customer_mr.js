@@ -13,19 +13,17 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
             var customerSearchObj = search.create({
                 type: "customer",
                 filters:
-                [  
-                    // ["custentity_sf_id","isempty",""], 
-                    // "AND", 
-                    ["isinactive","is","F"],
-                    // "AND", 
-                    // ["parentcustomer.entityid","isempty",""]
+                [
+                   ["status","anyof","16"],//is Customer-Lost
+                   "AND", 
+                   ["isinactive","is","F"]
                 ],
                 columns:
-                [                   
+                [                 
                 ]
              });
              var searchResultCount = customerSearchObj.runPaged().count;
-             log.debug("customerSearchObj result count",searchResultCount);
+             log.debug("customerSearchObj result count",searchResultCount);        
         
             
             return customerSearchObj;

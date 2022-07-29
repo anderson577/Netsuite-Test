@@ -1,46 +1,46 @@
 {
 	"info": {
-		"_postman_id": "43c74f38-d36e-41a2-ad7e-01090bc81263",
-		"name": "NS API(測試區)",
+		"_postman_id": "9549bc17-124d-404e-a76e-06b08f70ed04",
+		"name": "NS API(正式區)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17789103"
 	},
 	"item": [
 		{
-			"name": "NS Cus vacc number(測試區)",
+			"name": "NS Cus vacc number(正式區)",
 			"request": {
 				"auth": {
 					"type": "oauth1",
 					"oauth1": [
 						{
-							"key": "tokenSecret",
-							"value": "24b3ad2d50c25cc211984e50e46d2268f153fd8d83462fb1bfba01818607a263",
-							"type": "string"
-						},
-						{
-							"key": "token",
-							"value": "daeb7d0302163682445f1170ce8a563294fb9feef5b3504d40456b1cd28f7851",
-							"type": "string"
-						},
-						{
 							"key": "consumerSecret",
-							"value": "a004a760eefec5637ea38c0cf1ab88153521b88da375f737966ff5f9943cb4eb",
+							"value": "6dca2ce3e61d4407d916dc392642bd6f03b8a78d746aa06e392f186f948eebb6",
 							"type": "string"
 						},
 						{
 							"key": "consumerKey",
-							"value": "cda9f8ceaa81d8a59f1eb8d4f1180a1d9eaf88e6aa80287a2d6d2811d9bad45d",
+							"value": "c373636bfe01ccd66f084bd54ac6f88c9d9ec827268a47bc8a7eb4f876166e78",
+							"type": "string"
+						},
+						{
+							"key": "tokenSecret",
+							"value": "d5ad0c454338a6a28947f12efc6883738af1c7d3dbec5e205fc4d9c3868f0ae8",
+							"type": "string"
+						},
+						{
+							"key": "token",
+							"value": "2450cfb4db5abb18000902340038a8c1e8f0544c917c27636894d5e03221c667",
+							"type": "string"
+						},
+						{
+							"key": "realm",
+							"value": "4631466",
 							"type": "string"
 						},
 						{
 							"key": "addEmptyParamsToSign",
 							"value": false,
 							"type": "boolean"
-						},
-						{
-							"key": "realm",
-							"value": "4631466_SB1",
-							"type": "string"
 						},
 						{
 							"key": "addParamsToHeader",
@@ -68,7 +68,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n \"entityid_l\":[\"C012592\",\"C012597\"]\r\n}",
+					"raw": "{\r\n \"entityid_l\":[\"C012549\",\"C009870\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -76,10 +76,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://4631466-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_api_get_vacc_rl&deploy=customdeploy_api_get_vacc_rl",
+					"raw": "https://4631466.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_api_get_vacc_rl&deploy=customdeploy_api_get_vacc_rl",
 					"protocol": "https",
 					"host": [
-						"4631466-sb1",
+						"4631466",
 						"restlets",
 						"api",
 						"netsuite",

@@ -37,9 +37,10 @@ function(currentRecord, record, search, url, log) {
                  log.debug("entitystatus", entitystatus);
     
                  if(entitystatus!=13){
-                    Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect請待財會轉客戶-Win才能選擇!'});
+                    Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect、LOST CUSTOMER請待財會轉客戶-Win才能選擇!'});
                     return false;
-                 }else{
+                 }
+                 if(entitystatus==13){
                     objRecord.setValue({ fieldId: 'custbody_costomer_block', value: 'Y', ignoreFieldChange: true});
                     
                  }
@@ -75,29 +76,31 @@ function(currentRecord, record, search, url, log) {
                                ["internalid","anyof",entity]
                             ],
                             columns:
-                            [                          
+                            [
+                                search.createColumn({name: "entitystatus", label: "Status"})                            
                             ]
                          });
-                        var entitytype='';
+                        var entitystatus='';
                          customerSearchObj.run().each(function(result){
                             log.debug("result", result);
-                            entitytype=result.recordType;
+                            entitystatus=result.getValue('entitystatus');
                             return true;
                          });
-                         log.debug("entitytype", entitytype);
+                         log.debug("entitystatus", entitystatus);
         
-                         if(entitytype!='customer'){
-                            Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect請待財會轉客戶才能選擇!'});
+                         if(entitystatus!=13){
+                            Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect、LOST CUSTOMER請待財會轉客戶-Win才能選擇!'});
                             objRecord.setValue({ fieldId: 'entity', value: null, ignoreFieldChange: true});
                          }
                     }         
                 }                   
             }
-            if(context.sublistId == "item" && context.fieldId == "custcol_cus_type"){
+            if(context.sublistId == "item" && context.fieldId == "custcol_cus_status"){
                 if(objRecord.type=='purchaseorder'){
-                    var customer_type=objRecord.getCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_cus_type' });
-                    if(customer_type!='Customer' && customer_type!=''){
-                        Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect請待財會轉客戶才能選擇!'});
+                    var customer_status=objRecord.getCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_cus_status' });
+                    console.log('customer_status',customer_status);
+                    if(customer_status!='Win' && customer_status!=''){
+                        Ext.Msg.show({title: '提醒',width: 350,buttons: Ext.Msg.OK, msg:'Opportunitites、Prospect、LOST CUSTOMER請待財會轉客戶-Win才能選擇!'});
                         objRecord.setCurrentSublistValue({ sublistId: 'item', fieldId: 'customer', value: null, ignoreFieldChange: false });
                     }
                 }

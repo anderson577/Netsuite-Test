@@ -120,24 +120,24 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         
 
       
-        var field_trandate_strat=form.addField({
+        var field_invoice_trandate_strat=form.addField({
             id: 'custpage_invoice_trandate_strat',
             type: ui.FieldType.DATE,
             label: '發票交易日期起:',
             container: 'filter1'
         });
-        field_trandate_strat.updateLayoutType({
+        field_invoice_trandate_strat.updateLayoutType({
             layoutType: ui.FieldLayoutType.OUTSIDEBELOW
         });
       
       
-        var field_trandate_end=form.addField({
+        var field_invoice_trandate_end=form.addField({
             id: 'custpage_invoice_trandate_end',
             type: ui.FieldType.DATE,
             label: '發票交易日期迄:',
             container: 'filter1'
         });
-        field_trandate_end.updateLayoutType({
+        field_invoice_trandate_end.updateLayoutType({
             layoutType: ui.FieldLayoutType.OUTSIDEBELOW
         });
     
@@ -268,29 +268,29 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         });
 
 
-        var trandate_strat = context.request.parameters.custpage_invoice_trandate_strat
-        var field_trandate_strat=form.addField({
+        var invoice_trandate_strat = context.request.parameters.custpage_invoice_trandate_strat
+        var field_invoice_trandate_strat=form.addField({
             id: 'custpage_invoice_trandate_strat',
             type: ui.FieldType.DATE,
             label: '發票交易日期起:',
             container: 'filter1'
         });
-        field_trandate_strat.updateLayoutType({
+        field_invoice_trandate_strat.updateLayoutType({
             layoutType: ui.FieldLayoutType.OUTSIDEBELOW
         });
-        field_trandate_strat.defaultValue = trandate_strat;
+        field_invoice_trandate_strat.defaultValue = invoice_trandate_strat;
 
-        var trandate_end = context.request.parameters.custpage_invoice_trandate_end
-        var field_trandate_end=form.addField({
+        var invoice_trandate_end = context.request.parameters.custpage_invoice_trandate_end  
+        var field_invoice_trandate_end=form.addField({
             id: 'custpage_invoice_trandate_end',
             type: ui.FieldType.DATE,
             label: '發票交易日期迄:',
             container: 'filter1'
         });
-        field_trandate_end.updateLayoutType({
+        field_invoice_trandate_end.updateLayoutType({
             layoutType: ui.FieldLayoutType.OUTSIDEBELOW
         });
-        field_trandate_end.defaultValue = trandate_end;
+        field_invoice_trandate_end.defaultValue = invoice_trandate_end;
 
         var field_select_cus = form.addField({ 
             id: 'custpage_select_cus', 
@@ -512,7 +512,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         field_cuslist_invoice_amt.updateDisplayType({ displayType: ui.FieldDisplayType.INLINE });
         var field_cuslist_datacount = form.addField({ 
             id: 'custpage_cuslist_datacount', 
-            label: '資料總比數', 
+            label: '已選資料比數', 
             type: ui.FieldType.INTEGER,
             container: 'custpage_invoicetab' 
         }); 
@@ -551,7 +551,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         }
         var pagesize = 50;
         // var retrieveSearch = runSearch(pagesize, customers, 'SalesOrd');
-        var invoice_data=search_invoice_data(pagesize,pageId,customer);
+        var invoice_data=search_invoice_data(pagesize,pageId,customer,invoice_trandate_strat,invoice_trandate_end);
      
         
         var pageCount = Math.ceil(invoice_data.AllCount / pagesize);
@@ -767,20 +767,28 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
          return data;
 
     }
-    function search_invoice_data(pagesize,pageId,customer){
+    function search_invoice_data(pagesize,pageId,customer,trandate_start,trandate_end){
         if(customer==''){
             return {AllCount:0,list:[]};;
         }
+        var filter=  [
+            ["mainline","is","T"],
+            "AND", 
+            [["name","anyof",customer],"OR",["customer.custentity_parent","anyof",customer]],
+            "AND", 
+            ["status","anyof","CustInvc:A"]
+         ];
+        if(trandate_start!=''&&trandate_start!=null&&trandate_start!=undefined){
+            filter.push("AND");
+            filter.push(["trandate","onorafter",trandate_start]);
+        }
+        if(trandate_end!=''&&trandate_end!=null&&trandate_end!=undefined){
+            filter.push("AND");
+            filter.push(["trandate","onorbefore",trandate_end]);
+        }
         var transactionSearchObj = search.create({
             type: "invoice",
-            filters:
-            [
-               ["mainline","is","T"],
-               "AND", 
-               [["name","anyof",customer],"OR",["customer.custentity_parent","anyof",customer]],
-               "AND", 
-               ["status","anyof","CustInvc:A"]
-            ],
+            filters:filter,
             columns:
             [
                search.createColumn({

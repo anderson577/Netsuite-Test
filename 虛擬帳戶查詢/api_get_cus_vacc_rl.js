@@ -16,8 +16,7 @@
 
     }
     function doPost(context) {       
-        try {
-            log.debug('request',JSON.stringify(context.request));
+        try {        
             log.debug('context',JSON.stringify(context));
             var s_data=JSON.parse(JSON.stringify(context));
             //log.debug('s_data',s_data);
@@ -34,6 +33,11 @@
                         entityid_c.push(entityid_l[i]);
                         data.push({
                             entityid:entityid_l[i],
+                            altname:'',
+                            beneficiary_bank:'',
+                            bank_code:'',
+                            branch_code:'',
+                            swift_code:'',
                             vacc_number:'',
                             subsidiary:''
                         });
@@ -48,22 +52,39 @@
                     ],
                     columns:
                     [    
-                       search.createColumn({name: "entityid", label: "ID"}),                 
+                       search.createColumn({name: "entityid", label: "ID"}),
+                       "altname",
+                       search.createColumn({name: "custentity_beneficiary_bank", label: "受款銀行(BENEFICIARY BANK)"}),
+                       search.createColumn({name: "custentity_bank_code", label: "銀行代碼(BANK CODE)"}),                       
+                       search.createColumn({name: "custentity_branch_code", label: "分行代碼(BRANCH CODE)"}),
+                       search.createColumn({name: "custentity_swift_code", label: "SWIFT CODE"}),                 
                        search.createColumn({name: "custentity_vacc_check_number", label: "虛擬帳戶號碼(含檢查碼)"}),
                        search.createColumn({name: "subsidiarynohierarchy", label: "Primary Subsidiary (no hierarchy)"})
                     ]
                  });
                  
-                 customerSearchObj.run().each(function(result){
-                    for(var j=0;j<data.length;j++){
-                        if(data[j].entityid==result.getValue('entityid')){
-                            data[j].vacc_number=result.getValue('custentity_vacc_check_number');
-                            data[j].subsidiary=result.getText('subsidiarynohierarchy');
-                            break;
+                 var results = customerSearchObj.run();             
+                 var searchid = 0;
+                 do {
+                     var resultslice = results.getRange({start:searchid,end:searchid+1000});
+                        resultslice.forEach(function(slice) { 
+                            for(var j=0;j<data.length;j++){
+                                if(data[j].entityid==slice.getValue('entityid')){
+                                    data[j].altname=slice.getValue('altname');
+                                    data[j].beneficiary_bank=slice.getValue('custentity_beneficiary_bank');
+                                    data[j].bank_code=slice.getValue('custentity_bank_code');
+                                    data[j].branch_code=slice.getValue('custentity_branch_code');
+                                    data[j].swift_code=slice.getValue('custentity_swift_code');
+                                    data[j].vacc_number=slice.getValue('custentity_vacc_check_number');
+                                    data[j].subsidiary=slice.getText('subsidiarynohierarchy');
+                                    break;
+                                }
+                            }
+                            searchid++;
                         }
-                    }
-                    return true;
-                 });                 
+                     );
+                 } while (resultslice.length >=1000);              
+                        
                
                 return {
                     status:'success',

@@ -39,8 +39,10 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                         sf_id:sf_id,
                         isdelete:true
                     } }; 
-                    log.debug('data', data); 
-                    var response =JSON.parse(SF.posttoSF(data,'NS_CUS_API'));
+                    log.debug('data', data);
+                    var response_str=SF.posttoSF(data,'NS_CUS_API');
+                    log.debug('response_str', response_str); 
+                    var response =JSON.parse(response_str);
                     log.debug('response', response); 
                     if(response.status=='success'){
                         log.debug('internalid', response.data.internalid);

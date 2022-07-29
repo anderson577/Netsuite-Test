@@ -1,0 +1,40 @@
+Deposit之處理
+
+
+常用情境
+1.支票兌現
+2.客戶付不同幣別(eg.NS裡面是台幣，實際收美金)
+
+流程
+
+1.支票兌現
+
+>>
+
+銀行收到錢=>對帳平台會看的到
+我會點"Deposit"
+
+選"銀行科目(現金)"
+
+分錄
+
+Bank(現金)   XXX
+    233100        XXX
+
+
+
+2.客戶付不同幣別(付款幣別與invoice幣別不一樣)
+
+>>
+
+銀行收到錢(USD)=>對帳平台會看到USD
+
+我會點 CUSTOMER PAYMENT
+
+ACCOUNT 選 UNDEPOSITED FUNDS => 233100 DEPOSIT用的會計科目
+下面會勾 INVOICE (TWD)
+
+我會再執行DEPOSIT
+
+
+
