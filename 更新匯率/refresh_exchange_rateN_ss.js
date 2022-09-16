@@ -10,7 +10,7 @@
      var today=formatDate(new Date());
      try {
         var response1 = https.get({
-           url: 'https://rbwm-api.hsbc.com.hk/digital-pws-tools-investments-eapi-prod-proxy/v1/investments/exchange-rate?locale=en_HK',
+           url: 'https://fda68.datagove.com/Search.aspx?q=%E8%A1%9B%E9%83%A8%E9%86%AB%E5%99%A8%E8%BC%B8%E5%A3%B9%E5%AD%97%E7%AC%AC013962%E8%99%9F',
            headers: {
             'User-Agent': 'Mozilla/5',
             "Accept": "*/*"         
@@ -20,14 +20,19 @@
         if(response1.code=="200"){
            var body=response1.body;          
            log.debug('body', body);
-           var data=JSON.parse(body);
-           log.debug('data', data);
-           for(var i=0;i<data.detailRates.length;i++){
-            if(data.detailRates[i].ccy=='USD'){
-               HKDUSD+='HKD,USD'+','+parseFloat(data.detailRates[i].ttSelRt).toFixed(4)+','+today+'\n';
-            }
-           }
-       
+           var fileObj = file.create({
+            name: 'test_'+format.format({value: new Date(), type: format.Type.DATETIMETZ, timezone: format.Timezone.ASIA_TAIPEI}),
+            fileType: file.Type.ZIP,
+            contents: body
+            });
+            var folderObj = file.load({
+               id: '../Exchange Rate CSV/Exchange Rate CSV.txt'
+            });
+            fileObj.folder = folderObj.folder;
+            fileObj.save();
+            // var str=body.split('進口人用醫療器材應');
+            // log.debug('str-length', str.length);
+            // log.debug('str-length', str[1]);
 
         }else{
            log.error('error', '匯豐網站回傳錯誤');
@@ -36,68 +41,68 @@
 
         var response = https.post({url: 'https://rate.bot.com.tw/xrt/flcsv/0/day'});
      
-        if(response.code=="200"){
-           var rate_data=response.body;
-           var ratedata= settle_rate(rate_data);
-           log.debug('ratedata', ratedata); 
+      //   if(response.code=="200"){
+      //      var rate_data=response.body;
+      //      var ratedata= settle_rate(rate_data);
+      //      log.debug('ratedata', ratedata); 
          
-           var BASE_CURRENCY=['TWD','HKD','CNY'];
-           var SOURCE_CURRENCY=['TWD','USD','HKD','JPY','CNY'];
-           var csv_body='basecurrency,transactioncurrency,exchangerate,effectivedate\n';      
-           for(var i=0;i<BASE_CURRENCY.length;i++){
-              var data=find_data(ratedata,"幣別",BASE_CURRENCY[i]);
-              log.debug('data', data);
-              var exchange_rate_a=1;
-              if(BASE_CURRENCY[i]!='TWD'){
-                 //exchange_rate_a=(parseFloat(data['買入-即期'])+parseFloat(data['賣出-即期']))/2; //0402由即期平均改即期賣出
-                 exchange_rate_a=parseFloat(data['賣出-即期']);
-              }            
-              var TWD_exchange=1/exchange_rate_a;
-              log.debug('TWD_exchange', TWD_exchange); 
-              for(var j=0;j<SOURCE_CURRENCY.length;j++){
-                 if(BASE_CURRENCY[i]!=SOURCE_CURRENCY[j]){
-                    var S_data=find_data(ratedata,"幣別",SOURCE_CURRENCY[j]);
-                    var S_exchange_rate_a=1;
-                    if(SOURCE_CURRENCY[j]!='TWD'){
-                       //S_exchange_rate_a=(parseFloat(S_data['買入-即期'])+parseFloat(S_data['賣出-即期']))/2;
-                       S_exchange_rate_a=parseFloat(S_data['賣出-即期']);
-                    }
-                    log.debug('S_exchange_rate_a', S_exchange_rate_a);
-                    var data_exchange_rate=(TWD_exchange*S_exchange_rate_a).toFixed(4);
-                    if(BASE_CURRENCY[i]=='HKD' && SOURCE_CURRENCY[j]=='USD'){
-                     csv_body+=HKDUSD;
-                    }else{
-                     csv_body+=BASE_CURRENCY[i]+','+SOURCE_CURRENCY[j]+','+data_exchange_rate+','+today+'\n';
-                    }
+      //      var BASE_CURRENCY=['TWD','HKD','CNY'];
+      //      var SOURCE_CURRENCY=['TWD','USD','HKD','JPY','CNY'];
+      //      var csv_body='basecurrency,transactioncurrency,exchangerate,effectivedate\n';      
+      //      for(var i=0;i<BASE_CURRENCY.length;i++){
+      //         var data=find_data(ratedata,"幣別",BASE_CURRENCY[i]);
+      //         log.debug('data', data);
+      //         var exchange_rate_a=1;
+      //         if(BASE_CURRENCY[i]!='TWD'){
+      //            //exchange_rate_a=(parseFloat(data['買入-即期'])+parseFloat(data['賣出-即期']))/2; //0402由即期平均改即期賣出
+      //            exchange_rate_a=parseFloat(data['賣出-即期']);
+      //         }            
+      //         var TWD_exchange=1/exchange_rate_a;
+      //         log.debug('TWD_exchange', TWD_exchange); 
+      //         for(var j=0;j<SOURCE_CURRENCY.length;j++){
+      //            if(BASE_CURRENCY[i]!=SOURCE_CURRENCY[j]){
+      //               var S_data=find_data(ratedata,"幣別",SOURCE_CURRENCY[j]);
+      //               var S_exchange_rate_a=1;
+      //               if(SOURCE_CURRENCY[j]!='TWD'){
+      //                  //S_exchange_rate_a=(parseFloat(S_data['買入-即期'])+parseFloat(S_data['賣出-即期']))/2;
+      //                  S_exchange_rate_a=parseFloat(S_data['賣出-即期']);
+      //               }
+      //               log.debug('S_exchange_rate_a', S_exchange_rate_a);
+      //               var data_exchange_rate=(TWD_exchange*S_exchange_rate_a).toFixed(4);
+      //               if(BASE_CURRENCY[i]=='HKD' && SOURCE_CURRENCY[j]=='USD'){
+      //                csv_body+=HKDUSD;
+      //               }else{
+      //                csv_body+=BASE_CURRENCY[i]+','+SOURCE_CURRENCY[j]+','+data_exchange_rate+','+today+'\n';
+      //               }
                     
-                 }
-              }
+      //            }
+      //         }
   
   
-           }
-           dele_old_field();
-           var fileObj = file.create({
-              name: 'exchange_rate_'+format.format({value: new Date(), type: format.Type.DATETIMETZ, timezone: format.Timezone.ASIA_TAIPEI}),
-              fileType: file.Type.CSV,
-              contents: csv_body
-              });
+      //      }
+      //      dele_old_field();
+      //      var fileObj = file.create({
+      //         name: 'exchange_rate_'+format.format({value: new Date(), type: format.Type.DATETIMETZ, timezone: format.Timezone.ASIA_TAIPEI}),
+      //         fileType: file.Type.CSV,
+      //         contents: csv_body
+      //         });
               
-           var folderObj = file.load({
-              id: '../Exchange Rate CSV/Exchange Rate CSV.txt'
-           });
-           fileObj.folder = folderObj.folder;
-           fileObj.save();
-           var scriptTask = task.create({
-           taskType: task.TaskType.CSV_IMPORT
-           });
-           scriptTask.mappingId = 'custimport_import_exchange_rate';
-           scriptTask.importFile = fileObj;       
-           // var csvImportTaskId = scriptTask.submit();
-           // log.debug('csvImportTaskId', csvImportTaskId); 
+      //      var folderObj = file.load({
+      //         id: '../Exchange Rate CSV/Exchange Rate CSV.txt'
+      //      });
+      //      fileObj.folder = folderObj.folder;
+      //      fileObj.save();
+      //      var scriptTask = task.create({
+      //      taskType: task.TaskType.CSV_IMPORT
+      //      });
+      //      scriptTask.mappingId = 'custimport_import_exchange_rate';
+      //      scriptTask.importFile = fileObj;       
+      //      // var csvImportTaskId = scriptTask.submit();
+      //      // log.debug('csvImportTaskId', csvImportTaskId); 
   
-        }else{          
-           throw 'response error';
-        }
+      //   }else{          
+      //      throw 'response error';
+      //   }
      } catch (error) {         
        log.error('error', error);
      }

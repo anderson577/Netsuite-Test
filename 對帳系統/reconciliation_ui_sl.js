@@ -169,12 +169,6 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             id: 'filter1',
             label: '篩選條件'
         });
-      
-
-        var filter1 = form.addFieldGroup({
-            id: 'filter1',
-            label: '篩選條件'
-        });
        
         var customer = context.request.parameters.custpage_pt_customer
         var field_customer = form.addField({
@@ -592,6 +586,11 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             id: 'custpage_invoice_select_all',
             label: '全選',
             functionName: 'select_all'
+        })
+        cuslist_invoice.addButton({
+            id: 'custpage_invoice_cancel_all',
+            label: '取消全選',
+            functionName: 'cancel_all'
         })
      
         var solist_invoice_id = cuslist_invoice.addField({id: "custpage_invoice_id",type: ui.FieldType.TEXT,label: "ID"});

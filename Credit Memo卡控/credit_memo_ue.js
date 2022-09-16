@@ -8,26 +8,44 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
     function beforeLoad(context) {
         var rec = context.newRecord;
         if (context.type == "create" ){ 
-            var form=context.form;
-            var apply = form.getSublist({
-                id : 'apply'
-            });
-            log.debug("apply", apply);
-            //apply.displayType = serverWidget.SublistDisplayType.HIDDEN;
-            var tabs = form.getTabs();
-            log.debug("tabs", tabs);
-            var linecount = rec.getLineCount({ sublistId: 'apply'});
-            for(var i=0;i<linecount;i++){
-                //rec.setSublistValue({sublistId: 'apply',fieldId: 'apply',line: i,value:false});             
+            var user_roleId=runtime.getCurrentUser().roleId;
+            if(user_roleId!='customrole1003' && user_roleId!='customrole1005' && user_roleId!='administrator' && user_roleId!='customrole1018'){
+                //NextLink CFO,Consultant-Full Access,Administrator,NextLink A/R Clerk    
+                var form=context.form;
+                var hideFld = form.addField({
+                    id:'custpage_hide_buttons',
+                    label:'not shown - hidden',
+                    type: serverWidget.FieldType.INLINEHTML
+                });
+                var scr = "";
+                // scr += 'jQuery("#payall").hide();';
+                // scr += 'jQuery("#autoapply").hide();';
+                scr += 'setTimeout(function(){jQuery("#clear").click();},2000);';
+                
+                hideFld.defaultValue = "<script>jQuery(function($){require([], function(){" + scr + ";})})</script>";             
             }
-
-            log.debug("linecount", linecount);
 
         }
     }
 
     function beforeSubmit(context) { 
-  
+        var rec = context.newRecord;
+        if (context.type == "create" ){ 
+            var user_roleId=runtime.getCurrentUser().roleId;
+            if(user_roleId!='customrole1003' && user_roleId!='customrole1005' && user_roleId!='administrator' && user_roleId!='customrole1018'){
+                //NextLink CFO,Consultant-Full Access,Administrator,NextLink A/R Clerk    
+                var applied =rec.getValue('applied');
+                if(applied!=0){                  
+                    var err = error.create({
+                        name: '注意',
+                        message: '財務人員才可建立有Apply的Credit Memo!',
+                        notifyOff: true
+                    });
+        
+                    throw err;  
+                }     
+            }
+        }          
     }
 
     function afterSubmit(context) {  

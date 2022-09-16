@@ -6,17 +6,19 @@ define(['N/record', 'N/runtime', 'N/config', 'N/search','N/ui/serverWidget'], fu
 
     function beforeLoad(context) {
         var rec = context.newRecord;
-        if (context.type == "create"){
-            var parameter=context.request.parameters;
-            if(parameter!=null&&parameter!=undefined&&parameter!=''){
-                var account = context.request.parameters['account'];      
-                log.debug('account', account); 
-                if(account!='' && account!=undefined && account!=null){                
-                    rec.setValue({fieldId: 'account',value:account,ignoreFieldChange: true});
-                    if(rec.type=='vendorpayment')rec.setValue({fieldId: 'apacct',value:1400,ignoreFieldChange: true});//應付稅捐
-    
-                }    
-            }         
+        if (context.type == "create"){            
+            if(context.request!=undefined){
+                var parameter=context.request.parameters;
+                if(parameter!=null&&parameter!=undefined&&parameter!=''){
+                    var account = context.request.parameters['account'];      
+                    log.debug('account', account); 
+                    if(account!='' && account!=undefined && account!=null){                
+                        rec.setValue({fieldId: 'account',value:account,ignoreFieldChange: true});
+                        if(rec.type=='vendorpayment')rec.setValue({fieldId: 'apacct',value:1400,ignoreFieldChange: true});//應付稅捐
+        
+                    }    
+                }       
+            }           
         }
         var new_create=rec.getValue('custbody_new_create');
         if(new_create==true && context.type=='view'){
@@ -42,7 +44,7 @@ define(['N/record', 'N/runtime', 'N/config', 'N/search','N/ui/serverWidget'], fu
             var url='/app/accounting/transactions/'+urltype+'.nl?entity='+entityid+'&account='+account;
          
             var scr =  "Ext.Msg.show({"+
-                "title: '提醒',width: 300,buttons: {ok:'建立稅額'}, msg:'請記得建立稅額!',icon :Ext.MessageBox.INFO,"+
+                "title: '提醒',width: 300,buttons: Ext.Msg.OK, msg:'請記得建立稅額!',icon :Ext.MessageBox.INFO,"+
                 "fn: function (button){"+                   
                     "if(button == 'ok'){"+                                       
                         "window.open('"+url+"','_blank');"+
@@ -71,16 +73,18 @@ define(['N/record', 'N/runtime', 'N/config', 'N/search','N/ui/serverWidget'], fu
                 id: entity,
                 columns: ['altname','custentity_create_tax']
             });
-            log.debug('vendor_rec', vendor_rec); 
-            if(vendor_rec.altname.indexOf(' 國稅局-')==-1){
-                if(rec.type=='vendorpayment' && vendor_rec.custentity_create_tax==true){
-                    rec.setValue({fieldId: 'custbody_new_create',value:true,ignoreFieldChange: true}); 
+            log.debug('vendor_rec', vendor_rec);
+            if(vendor_rec.altname!=""){
+                if(vendor_rec.altname.indexOf(' 國稅局-')==-1){
+                    if(rec.type=='vendorpayment' && vendor_rec.custentity_create_tax==true){
+                        rec.setValue({fieldId: 'custbody_new_create',value:true,ignoreFieldChange: true}); 
+                    }
+                    if(rec.type=='vendorprepayment' && vendor_rec.custentity_create_tax==true){
+                        rec.setValue({fieldId: 'custbody_new_create',value:true,ignoreFieldChange: true}); 
+                    }
+                    
                 }
-                if(rec.type=='vendorprepayment' && vendor_rec.custentity_create_tax==true){
-                    rec.setValue({fieldId: 'custbody_new_create',value:true,ignoreFieldChange: true}); 
-                }
-                
-            }
+            }          
         
         }
 

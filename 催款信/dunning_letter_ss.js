@@ -2,29 +2,29 @@
  *@NApiVersion 2.x
  *@NScriptType ScheduledScript
  */
- define(['N/runtime', 'N/search', 'N/record','N/email','N/format','N/https','N/file', 'N/task','N/error','N/email', 'N/render']
- , function(runtime, search, record,email,format,https,file,task,error,email,render) {
+ define(['N/runtime', 'N/search', 'N/record','N/email','N/format','N/https','N/file', 'N/task','N/error','N/email', 'N/render','N/url']
+ , function(runtime, search, record,email,format,https,file,task,error,email,render,url) {
 
    function execute(context) {
 
   
      try {
-      var xmlTmplFile = file.load({
-            id: "../Html/dunning_letter.html" ,
-      });
 
-      var renderer = render.create();
-      renderer.templateContent = xmlTmplFile.getContents();
+
+        var scriptUrl = url.resolveScript({
+        scriptId: "customscript_dunning_letter_sl",
+        deploymentId: "customdeploy_dunning_letter_sl",
+        returnExternalUrl: true,
+        params:{ cus_id:348,mode:'send',inv_L:'all'}
+        });
+        //log.debug('scriptUrl',scriptUrl);
+        var response = https.get({url: scriptUrl});
+        if(response.body=="success"){
+          log.debug('cus:348',response);
+        }else{
+          log.error('cus:348',response);
+        }
       
-
-      var xmlStr = renderer.renderAsString();
-      log.debug('xmlStr', xmlStr);
-      email.send({
-         author: 25968,
-         recipients: [25968],
-         subject: '【博弘雲端科技(股)公司】催收帳款通知信 - 曜智科技股份有限公司',
-         body: xmlStr,       
-       });
      } catch (error) {
         log.error('error', error);
         email.send({

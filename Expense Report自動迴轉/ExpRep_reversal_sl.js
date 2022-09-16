@@ -4,7 +4,7 @@
  */
 
 define([ 'N/record', 'N/search', 'N/file', 'N/render', 'N/log', 'N/format', 'N/https', 'N/url', 'N/runtime'],
-function(record, search, file, render, log, format, https, url, runtime) {
+function( record, search, file, render, log, format, https, url, runtime) {
     function onRequest(context) {
     	      
         var id = context.request.parameters.id;
@@ -33,10 +33,10 @@ function(record, search, file, render, log, format, https, url, runtime) {
          
        
             var payment_rec = record.create({
-                type: 'salesorder',
+                type: 'vendorpayment',
                 isDynamic: true,
                 defaultValues: {
-                    entity: entity_id,                  
+                    entity: entity_id,                                
                 }           
             });
 
@@ -50,18 +50,20 @@ function(record, search, file, render, log, format, https, url, runtime) {
             log.debug('subsidiary_t',subsidiary_t);
             log.debug('account',account);
             
-            payment_rec.setText({fieldId: 'approvalstatus',text:'Approved',ignoreFieldChange: true});
+            //payment_rec.setText({fieldId: 'approvalstatus',text:'Approved',ignoreFieldChange: true});
             payment_rec.setValue({fieldId: 'account',value:account,ignoreFieldChange: true});
             payment_rec.setValue({fieldId: 'subsidiary',value:subsidiary,ignoreFieldChange: true});
             payment_rec.setValue({fieldId: 'department',value:employee_rec.department[0].value,ignoreFieldChange: true});
             payment_rec.setValue({fieldId: 'class',value:employee_rec.class[0].value,ignoreFieldChange: true});
+            payment_rec.setValue({fieldId: 'trandate',value:exprept_rec.getValue('trandate'),ignoreFieldChange: true});
+            payment_rec.setValue({fieldId: 'postingperiod',value:exprept_rec.getValue('postingperiod'),ignoreFieldChange: true});
             var numberOfTransactions = payment_rec.getLineCount({ sublistId:'apply' });
             for (var i = 0; i < numberOfTransactions; i++) {
                 payment_rec.selectLine({sublistId: 'apply',line: i,});
                 var doc = payment_rec.getCurrentSublistValue({ sublistId: 'apply', fieldId: 'doc' });
                 if(doc==id){
                     payment_rec.setCurrentSublistValue({sublistId: 'apply',fieldId: 'apply',value: true}); 
-                    
+                    payment_rec.commitLine({sublistId: 'apply'});
                 }
             }
             log.debug('payment_rec',payment_rec);
@@ -80,7 +82,9 @@ function(record, search, file, render, log, format, https, url, runtime) {
             var memo='迴轉自Expense Report #'+tranid;
             journal_rec.setValue({fieldId: 'memo',value:memo,ignoreFieldChange: true});
             journal_rec.setValue({fieldId: 'currency',value:currency,ignoreFieldChange: true});
-            journal_rec.setText({fieldId: 'approvalstatus',text:'Approved',ignoreFieldChange: true});
+           // journal_rec.setText({fieldId: 'approvalstatus',text:'Approved',ignoreFieldChange: true});
+            journal_rec.setValue({fieldId: 'trandate',value:exprept_rec.getValue('trandate'),ignoreFieldChange: true});
+            journal_rec.setValue({fieldId: 'postingperiod',value:exprept_rec.getValue('postingperiod'),ignoreFieldChange: true});
             journal_rec.insertLine({sublistId: 'line',line: 0});
             journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'account',value: account});
             journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'debit',value: total});
@@ -89,10 +93,10 @@ function(record, search, file, render, log, format, https, url, runtime) {
             var line=1;
             var expenseLinecount = exprept_rec.getLineCount({ sublistId:'expense' });
             for (var i = 0; i < expenseLinecount; i++) {
-                var expens_account= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'expenseaccount',value: account ,line:i});
-                var expens_amount= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'amount',value: account ,line:i});
-                var expens_department= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'department',value: account ,line:i});
-                var expens_class= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'class',value: account ,line:i});
+                var expens_account= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'expenseaccount',line:i});
+                var expens_amount= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'amount',line:i});
+                var expens_department= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'department',line:i});
+                var expens_class= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'class',line:i});
                 journal_rec.insertLine({sublistId: 'line',line: line});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'account',value: expens_account});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'credit',value: expens_amount});
@@ -102,6 +106,7 @@ function(record, search, file, render, log, format, https, url, runtime) {
                 journal_rec.commitLine({sublistId: 'line'});
                 line++;
             }
+            log.debug('journal_rec',journal_rec);
             journal_rec.save({
                 enableSourcing: false,
                 ignoreMandatoryFields: true

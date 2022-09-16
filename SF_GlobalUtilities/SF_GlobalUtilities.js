@@ -40,7 +40,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
             var token_url ='https://'+account+'/services/oauth2/token?grant_type=password&client_id='+consumer_key+'&client_secret='+consumer_secret+'&username='+username+'&password='+password;
           //  log.debug('token_url', token_url); 
             var response = https.post({url: token_url});
-            var token = JSON.parse(response.body).access_token;//'00DBI0000000UPV!AQEAQJwqnG3FSlelNlevk_646ygntYepqrj1SxSldFgeJ8UvbTE3TjJdcI21zLyjcqeZa.f3kKb6hs_TJtCBGmpXQbe2ZJLf';
+            var token = JSON.parse(response.body).access_token;/*'6Cel800DBI0000002M2r888BI00000006gYHPEgpNmF4R2OjBgBgX5dNYNClAFdkpwUwpN8PPiU9Uzhkw5h9o79fxC6mbEzpuSsYN1TmaaS';*/
           //  log.debug('token', token)
             if(token!=null&&token!=''&&token!=undefined){
                 var api_url = 'https://'+account+'/services/apexrest/'+functionname;
@@ -58,6 +58,9 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                     headers: header,
                     body: JSON.stringify(data_obj)
                 });
+                log.debug('api_url',api_url)
+                log.debug('header',header)
+                log.debug('data_obj',JSON.stringify(data_obj))
                 log.debug('response',response)
                 log.debug('response.code',response.code)
                 if(response.code=="200"){
@@ -139,13 +142,14 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                 opp_id=opp_rec.custrecord_sf_opp_id;
                 log.debug('so_opp_rec', opp_rec);
             }
+         
             var data= { 'Obj' : {
                 cus_id:cus_rec.custrecord_sf_acc_id,
                 opp_id:opp_id,
                 so_id:sf_id,
                 ns_id:rec.id,
                 tranid:rec.getValue('tranid'),
-                status:status_translate('so',rec.getValue('status')),
+                status:status_translate('so',rec.getValue('statusRef')),
                 trandate:rec.getValue('trandate')!=''?parseDate(rec.getValue('trandate')):'',
                 department:rec.getText('department'),
                 classname:rec.getText('class'),
@@ -231,7 +235,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                 inv_id:sf_id,
                 ns_id:rec.id,
                 tranid:rec.getValue('tranid'),
-                status:status_translate('inv',rec.getValue('status')),
+                status:status_translate('inv',rec.getValue('statusRef')),
                 trandate:rec.getValue('trandate')!=''?parseDate(rec.getValue('trandate')):'',
                 department:rec.getText('department'),
                 classname:rec.getText('class'),
@@ -376,7 +380,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
         var data= { 'Obj' : {
             ns_id:rec.id,
             tranid:rec.getValue('tranid'),
-            status:status_translate('po',rec.getValue('status')),
+            status:status_translate('po',rec.getValue('statusRef')),
             trandate:rec.getValue('trandate')!=''?parseDate(rec.getValue('trandate')):'',
             department:rec.getText('department'),
             classname:rec.getText('class'),
@@ -463,33 +467,59 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
         return sf_opp_L;
     }
     function status_translate(type,status){
+        log.debug('status', status); 
         if(type=='po'){
-            if(status=='等待上司批准')status='Pending Supervisor Approval';
-            if(status=='等待收貨')status='Pending Receipt';
-            if(status=='上司拒收')status='Rejected by Supervisor';
-            if(status=='部分收貨')status='Partially Received';
-            if(status=='等待發帳單/部分收貨')status='Pending Billing/Partially Received';
-            if(status=='等待發帳單')status='Pending Bill';
-            if(status=='全部發帳單')status='Fully Billed';
-            if(status=='已關閉')status='Closed';
-            if(status=='已規劃')status='Planned';
+            // if(status=='等待上司批准')status='Pending Supervisor Approval';
+            // if(status=='等待收貨')status='Pending Receipt';
+            // if(status=='上司拒收')status='Rejected by Supervisor';
+            // if(status=='部分收貨')status='Partially Received';
+            // if(status=='等待發帳單/部分收貨')status='Pending Billing/Partially Received';
+            // if(status=='等待發帳單')status='Pending Bill';
+            // if(status=='全部發帳單')status='Fully Billed';
+            // if(status=='已關閉')status='Closed';
+            // if(status=='已規劃')status='Planned';
+
+            if(status=='pendingSupervisorApproval')status='Pending Supervisor Approval';
+            if(status=='pendingReceipt')status='Pending Receipt';
+            if(status=='rejectedbySupervisor')status='Rejected by Supervisor';
+            if(status=='partiallyReceived')status='Partially Received';
+            if(status=='pendingBillPartReceived')status='Pending Billing/Partially Received';
+            if(status=='pendingBilling')status='Pending Bill';
+            if(status=='fullyBilled')status='Fully Billed';
+            if(status=='closed')status='Closed';
+            if(status=='planned')status='Planned';
         }
         if(type=='so'){
-            if(status=='等待批准')status='Pending Approval';
-            if(status=='待完成')status='Pending Fulfillment';
-            if(status=='已取消')status='Cancelled';
-            if(status=='部分完成')status='Partially Fulfilled';
-            if(status=='等待發帳單/部分完成')status='Pending Billing/Partially Fulfilled';
-            if(status=='等待發帳單')status='Pending Billing';
-            if(status=='已發帳單')status='Billed';
-            if(status=='已關閉')status='Closed';
+            // if(status=='等待批准')status='Pending Approval';
+            // if(status=='待完成')status='Pending Fulfillment';
+            // if(status=='已取消')status='Cancelled';
+            // if(status=='部分完成')status='Partially Fulfilled';
+            // if(status=='等待發帳單/部分完成')status='Pending Billing/Partially Fulfilled';
+            // if(status=='等待發帳單')status='Pending Billing';
+            // if(status=='已發帳單')status='Billed';
+            // if(status=='已關閉')status='Closed';
+
+            if(status=='pendingApproval')status='Pending Approval';
+            if(status=='pendingFulfillment')status='Pending Fulfillment';
+            if(status=='cancelled')status='Cancelled';
+            if(status=='partiallyFulfilled')status='Partially Fulfilled';
+            if(status=='pendingBillingPartFulfilled')status='Pending Billing/Partially Fulfilled';
+            if(status=='pendingBilling')status='Pending Billing';
+            if(status=='fullyBilled')status='Billed';
+            if(status=='closed')status='Closed';
         }
         if(type=='inv'){
-            if(status=='未完成')status='Open';
-            if(status=='全額支付')status='Paid In Full';
-            if(status=='等待批准')status='Pending Approval';
-            if(status=='已拒絶')status='Rejected';
-            if(status=='已失效')status='Voided';
+            // if(status=='未完成')status='Open';
+            // if(status=='全額支付')status='Paid In Full';
+            // if(status=='等待批准')status='Pending Approval';
+            // if(status=='已拒絶')status='Rejected';
+            // if(status=='已失效')status='Voided';
+
+            if(status=='open')status='Open';
+            if(status=='paidInFull')status='Paid In Full';
+            if(status=='pendingApproval')status='Pending Approval';
+            if(status=='rejected')status='Rejected';
+            if(status=='voided')status='Voided';
         }
 
         return status;

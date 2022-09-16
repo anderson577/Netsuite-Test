@@ -6,28 +6,33 @@
 
 </head>
 <p>親愛的博弘客戶您好：</p>
-我們查看您的AWS賬戶目前有逾期款項，明細如後附。<br>
-<b style="color:red;">請於收到本通知後儘速匯款，以免影響貴公司使用權益，謝謝。</b><br>
-<br>
+我們查看您的AWS賬戶目前有逾期款項，明細如後附。<br/>
+<b style="color:red;">請於收到本通知後儘速匯款，以免影響貴公司使用權益，謝謝。</b><br/>
+<br/>
 逾期賬款明細：
 
 <table cellpadding="2" cellspacing="0" class="border" style="margin-top:10px;border:1px solid black;" >
   <tr>
     <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票號碼</b></td>
     <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票日期</b></td>
-    <td align="center" style="width: 120px;border:1px solid black;background-color:#B7E1CD;"><b>發票金額</b></td>	
+    <td align="center" style="width: 140px;border:1px solid black;background-color:#B7E1CD;"><b>發票金額</b></td>	
 	</tr>
-  <tr>
-    <td align="center" style="border:1px solid black;">BH04829192</td>
-    <td align="center" style="border:1px solid black;">2022/5/5</td>
-    <td align="center" style="border:1px solid black;">NT$6,402.00</td>	
-	</tr>
-  <tr>
-    <td align="center" colspan="2" style="border:1px solid black;"><b>合計</b></td>
-    <td align="center" style="border:1px solid black;"><b>$6,402.00</b></td>  
-	</tr>
+  <#list result.lines as currency_line>
+    <#list currency_line.data as line>
+      <tr>
+        <td align="center" style="border:1px solid black;">${line.GUI_VAT}</td>
+        <td align="center" style="border:1px solid black;">${line.GUI_VAT_Date}</td>
+        <td align="right" style="border:1px solid black;">${currency_line.currency_symbol}${line.fxamount?number?string[",##0.00"]}</td>	
+      </tr>
+    </#list>
+      <tr>
+        <td align="center" colspan="2" style="border:1px solid black;"><b>合計</b></td>
+        <td align="right" style="border:1px solid black;"><b>${currency_line.currency_symbol}${currency_line.amount_total?number?string[",##0.00"]}</b></td>  
+      </tr>
+  </#list>
+ 
 </table>
-<br>
+<br/>
 <b style="color:#4472C4;">（＊小提醒：款項會因為匯款帳戶與當初提供的不一致導致無法順利沖銷，如<br/>貴司已匯款，請協助提供匯款證明，並回覆此信件，以利查帳。）</b>
 
 
