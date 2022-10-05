@@ -23,13 +23,14 @@
             var entityid_l=s_data.entityid_l;
             if(entityid_l.length!=0){ 
 
-                var filter= [],data=[],entityid_c=[];
+                var filter= [["subsidiary","anyof","1","4"]],data=[],entityid_c=[];//10/05 先關閉對香港的查詢
+                var id_filter=[];
                 for(var i=0;i<entityid_l.length;i++){                   
                     if(entityid_c.indexOf(entityid_l[i])==-1){
                         if(i!=0){
-                            filter.push("OR");
-                        }                    
-                        filter.push( ["entityid","is",entityid_l[i]]);
+                            id_filter.push("OR");
+                        }                                        
+                        id_filter.push( ["entityid","is",entityid_l[i]]);
                         entityid_c.push(entityid_l[i]);
                         data.push({
                             entityid:entityid_l[i],
@@ -44,6 +45,14 @@
                     }   
                                  
                 }
+                if(id_filter.length>0){
+                    filter=[
+                        ["subsidiary","anyof","1","4"],
+                        "AND",
+                        id_filter
+                    ];
+                }              
+                
                 var customerSearchObj = search.create({
                     type: "customer",
                     filters:
