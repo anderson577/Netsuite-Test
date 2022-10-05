@@ -127,7 +127,8 @@
                    reconciliation_rec.setText({fieldId: 'custrecord_recon_currency',text:parsedata[i]['交易幣別'],ignoreFieldChange: true}); 
                    reconciliation_rec.setText({fieldId: 'custrecord_recon_source',text:'花旗銀行',ignoreFieldChange: true}); 
                    reconciliation_rec.setValue({fieldId: 'custrecord_mt940_data',value:mt940_rec.id,ignoreFieldChange: true}); 
-                   reconciliation_rec.setValue({fieldId: 'custrecord_reference_number',value:line_data['客戶參考編號'],ignoreFieldChange: true}); 
+                   reconciliation_rec.setValue({fieldId: 'custrecord_reference_number',value:line_data['客戶參考編號'],ignoreFieldChange: true});
+                   reconciliation_rec.setValue({fieldId: 'custrecord_recon_customer',value:search_customer(line_data['客戶參考編號']),ignoreFieldChange: true});  
                    reconciliation_rec.save(); 
 
                } 
@@ -356,7 +357,34 @@
       str=str.replace(/\<br\/\>/g," ");
       return str;
   }
-  
+  function search_customer(reference_number){
+    var cus_id='';
+    if(reference_number!=''){
+        var customerSearchObj = search.create({
+            type: "customer",
+            filters:
+            [
+               ["custentity_vacc_check_number","is",reference_number]
+            ],
+            columns:
+            [
+             
+            ]
+         });
+         var searchResultCount = customerSearchObj.runPaged().count;
+         log.debug("customerSearchObj result count",searchResultCount);
+         customerSearchObj.run().each(function(result){
+            cus_id=result.id;
+            return true;
+         });
+    }
+   
+    return cus_id;
+    
+  }
+
+
+
    return {
        execute: execute
    }

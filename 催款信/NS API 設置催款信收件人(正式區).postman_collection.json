@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "3ea77559-4013-480e-ade9-e99ce45f44ee",
+		"name": "NS API 設置催款信收件人(正式區)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17789103"
+	},
+	"item": [
+		{
+			"name": "NS Set Inv Email(正式區)",
+			"request": {
+				"auth": {
+					"type": "oauth1",
+					"oauth1": [
+						{
+							"key": "realm",
+							"value": "4631466",
+							"type": "string"
+						},
+						{
+							"key": "tokenSecret",
+							"value": "d5ad0c454338a6a28947f12efc6883738af1c7d3dbec5e205fc4d9c3868f0ae8",
+							"type": "string"
+						},
+						{
+							"key": "token",
+							"value": "2450cfb4db5abb18000902340038a8c1e8f0544c917c27636894d5e03221c667",
+							"type": "string"
+						},
+						{
+							"key": "consumerSecret",
+							"value": "6dca2ce3e61d4407d916dc392642bd6f03b8a78d746aa06e392f186f948eebb6",
+							"type": "string"
+						},
+						{
+							"key": "consumerKey",
+							"value": "c373636bfe01ccd66f084bd54ac6f88c9d9ec827268a47bc8a7eb4f876166e78",
+							"type": "string"
+						},
+						{
+							"key": "addEmptyParamsToSign",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "addParamsToHeader",
+							"value": true,
+							"type": "boolean"
+						},
+						{
+							"key": "includeBodyHash",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "signatureMethod",
+							"value": "HMAC-SHA256",
+							"type": "string"
+						},
+						{
+							"key": "version",
+							"value": "1.0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"entityid\":\"C011463\",\r\n \"email_L\":[\"nicholas.chen@nextlink.com.tw\",\"ariel.chang@fstk.io\",\"finance@fstk.io\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://4631466.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_api_set_inv_email_rl&deploy=customdeploy_api_set_inv_email_rl",
+					"protocol": "https",
+					"host": [
+						"4631466",
+						"restlets",
+						"api",
+						"netsuite",
+						"com"
+					],
+					"path": [
+						"app",
+						"site",
+						"hosting",
+						"restlet.nl"
+					],
+					"query": [
+						{
+							"key": "script",
+							"value": "customscript_api_set_inv_email_rl"
+						},
+						{
+							"key": "deploy",
+							"value": "customdeploy_api_set_inv_email_rl"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

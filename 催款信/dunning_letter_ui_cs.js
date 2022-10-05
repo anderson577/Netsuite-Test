@@ -94,7 +94,7 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
 			scriptId: 'customscript_dunning_letter_sl',
 			deploymentId: 'customdeploy_dunning_letter_sl',
 			returnExternalUrl: false,
-			params:{ cus_id:cus_id,mode:'view',inv_L:JSON.stringify(inv_id_L)}
+			params:{ cus_id:cus_id,mode:'view',inv_L:JSON.stringify(inv_id_L),send_L:''}
         });
         log.debug("scriptUrl",scriptUrl)
 		
@@ -103,15 +103,69 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
 	}
     function send() {
         var current_rec = currentRecord.get();
-        var recipients=current_rec.getValue('custpage_recipients'); 
-        var email_L=[];
+        var email_L=[],email_L_str='';
+        var recipients=current_rec.getValue('custpage_recipients');
         for (var i = 0; i < recipients.length; i++) {
             if(recipients[i].indexOf('#@')!=-1){
                 var mail=recipients[i].split('#@')[0];
                 if(email_L.indexOf(mail)==-1)email_L.push(mail);
             }
         }
+
+        var invoice_recipients=current_rec.getValue('custpage_invoice_recipients');
+        for (var i = 0; i < invoice_recipients.length; i++) {
+            if(invoice_recipients[i].indexOf('#@')!=-1){
+                var mail=invoice_recipients[i].split('#@')[0];
+                if(email_L.indexOf(mail)==-1)email_L.push(mail);
+            }
+        }
         console.log('email_L',email_L);
+        if(email_L.length==0){
+            alert('請至少選擇一位收件人!');  
+            return;
+        } 
+        for(var i = 0; i < email_L.length; i++){
+            if(i!=0)email_L_str+=',';
+            email_L_str+=email_L[i];
+        }
+           
+        var linecount = current_rec.getLineCount({ sublistId: 'custpage_cuslist_invoice' });
+        var cus_id='',inv_id_L=[];
+        for (var i = 0; i < linecount; i++) {
+            var select_L = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_select',line:i });
+            cus_id = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_customer_id',line:i });
+            if(select_L==true){
+                var inv_id = current_rec.getSublistValue({ sublistId: 'custpage_cuslist_invoice', fieldId: 'custpage_invoice_id',line:i });
+                inv_id_L.push(inv_id);
+            }
+        }
+        if(inv_id_L.length==0){
+            alert('請至少選擇一張發票!');  
+            return;
+        } 
+		var scriptUrl = url.resolveScript({
+			scriptId: 'customscript_dunning_letter_sl',
+			deploymentId: 'customdeploy_dunning_letter_sl',
+			returnExternalUrl: false,
+			params:{ cus_id:cus_id,mode:'send',inv_L:JSON.stringify(inv_id_L),send_L:email_L_str}
+        });
+        log.debug("scriptUrl",scriptUrl)
+        var domain_url = 'https://' + url.resolveDomain({
+            hostType: url.HostType.APPLICATION,
+            accountId: runtime.accountId
+          });
+          scriptUrl=domain_url + scriptUrl;      
+          var response = https.post({url:scriptUrl});  
+          
+          var rec_status= response.body;
+          
+          if(rec_status=='success'){
+            Ext.Msg.show({title: 'success',width: 250,buttons: Ext.Msg.OK, msg:'已成功發送'});
+          }else{
+            Ext.Msg.show({title: 'error',width: 250,buttons: Ext.Msg.OK, msg:'出錯，請重新整理再試!'});
+          }        
+		
+	
 
 	}
    

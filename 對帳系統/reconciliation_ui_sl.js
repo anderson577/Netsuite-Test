@@ -369,6 +369,8 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         solist_query_summary.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY }); 
         var solist_query_memo = cuslist_reconcili.addField({id: "custpage_memo",type: ui.FieldType.TEXT,label: "MEMO"});
         solist_query_memo.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
+        var solist_query_reference_number = cuslist_reconcili.addField({id: "custpage_reference_number",type: ui.FieldType.TEXT,label: "客戶參考編號"});
+        solist_query_reference_number.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
         var solist_query_reconciled = cuslist_reconcili.addField({id: "custpage_reconciled",type: ui.FieldType.TEXT,label: "狀態"});
         solist_query_reconciled.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
        
@@ -479,7 +481,14 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                     line: j,
                     value: result.bank_account
                 });
-            }    
+            }
+            if(result.reference_number){
+                cuslist_reconcili.setSublistValue({
+                    id: 'custpage_reference_number',
+                    line: j,
+                    value: result.reference_number
+                });
+            }           
             if(result.reconciled){
                 cuslist_reconcili.setSublistValue({
                     id: 'custpage_reconciled',
@@ -737,6 +746,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                search.createColumn({name: "custrecord_recon_source", label: "資料來源"}),
                search.createColumn({name: "custrecord_recon_reconciled", label: "Reconciled"}),
                search.createColumn({name: "custrecord_recon_company_account", label: "公司銀行帳戶"}),
+               search.createColumn({name: "custrecord_reference_number", label: "客戶參考編號"}),
             ]
          });
       
@@ -759,6 +769,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 source:result.getText('custrecord_recon_source'),
                 reconciled:result.getValue('custrecord_recon_reconciled'),
                 company_account:result.getValue('custrecord_recon_company_account'),
+                reference_number:result.getValue('custrecord_reference_number'),
             });
             return true;
          });

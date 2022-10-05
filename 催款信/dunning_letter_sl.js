@@ -21,17 +21,24 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
         var cus_id = context.request.parameters.cus_id;
         var mode = context.request.parameters.mode;
         var inv_L = context.request.parameters.inv_L;
+        var send_L = context.request.parameters.send_L;
         if(inv_L!='all')inv_L=JSON.parse(inv_L);
         log.debug('cus_id', cus_id);
         try {
             var filter=[
                 ["mainline","is","T"], 
                 "AND", 
-                ["duedate","before","today"], 
+                ["duedate","onorbefore","lastweektodate"], 
                 "AND", 
                 ["status","anyof","CustInvc:A"], 
                 "AND", 
                 ["custbody1","isnotempty",""], 
+                "AND", 
+                ["department","anyof","1"], 
+                "AND", 
+                ["subsidiary","anyof","1"], 
+                "AND", 
+                ["custbody21.group","anyof",Search_group('AWS TW CS Group')],                
                 "AND", 
                 ["name","anyof",cus_id]
             ];
@@ -58,6 +65,16 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                     name: "altname",
                     join: "customer",
                     label: "Name"
+                 }),
+                 search.createColumn({
+                    name: "custentity_invoice_groups_email",
+                    join: "customer",
+                    label: "Invoice Delivery Group'S Email"
+                 }),
+                 search.createColumn({
+                    name: "email",
+                    join: "salesRep",
+                    label: "Email"
                  })
                 ]
              });
@@ -65,7 +82,7 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
              log.debug("transactionSearchObj result count",searchResultCount);
 
              var results = { lines: [] };
-             var cus_name=''; 
+             var cus_name='',salesRep_email=[],invoice_groups_email=[]; 
              transactionSearchObj.run().each(function(result){
                 var currency=result.getText('currency');
                 var check_index=-1;
@@ -81,15 +98,38 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                         data:[]
                     });
                     check_index=results.lines.length-1;
-                }               
-                results.lines[check_index].data.push({                  
-                    GUI_VAT:result.getValue('custbody1'),
-                    GUI_VAT_Date:result.getValue('custbody10'),
-                    fxamount:parseFloat(result.getValue('fxamount'))                   
-                });              
-                cus_name=result.getValue({name: "altname",join: "customer",label: "Name"});         
+                } 
+                var same_gui=false;
+                for(var i=0;i<results.lines[check_index].data.length;i++){
+                    var line_data=results.lines[check_index].data[i];
+                    if(line_data.GUI_VAT==result.getValue('custbody1')){
+                        same_gui=true;
+                        line_data.fxamount+=parseFloat(result.getValue('fxamount'));
+                    }
+                }
+                if(same_gui==false){
+                    results.lines[check_index].data.push({                  
+                        GUI_VAT:result.getValue('custbody1'),
+                        GUI_VAT_Date:result.getValue('custbody10'),
+                        fxamount:parseFloat(result.getValue('fxamount'))                   
+                    });    
+                }             
+                       
+                cus_name=result.getValue({name: "altname",join: "customer",label: "Name"}); 
+                // var salesRepEmail=result.getValue({name: "email",join: "salesRep",label: "Email"});
+                // if(salesRepEmail!=''&& salesRep_email.indexOf(salesRepEmail)==-1){
+                //     salesRep_email.push(salesRepEmail);
+                // } //09/29因為從BP過來的收件人已經包含業務，改成不寄送發票sales rep
+                var groups_email=result.getValue({name: "custentity_invoice_groups_email",join: "customer",label: "Invoice Delivery Group'S Email"});
+                if(groups_email!=''){
+                    invoice_groups_email=groups_email.split(','); 
+                }
+                      
                 return true;
              });
+             log.debug('salesRep_email', salesRep_email);
+             if(send_L!='all' && send_L!='')invoice_groups_email=send_L.split(',');
+             log.debug('invoice_groups_email', invoice_groups_email);
 
              for(var i=0;i<results.lines.length;i++){
               
@@ -147,9 +187,10 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
             log.debug('xmlStr', xmlStr);
             if(mode=='send'){
                 email.sendBulk({
-                author: 117893,//NL-AWS-CS
-                recipients: ['anderson.yang@nextlink.com.tw'],
-                subject: '【博弘雲端科技(股)公司】催收帳款通知信 - '+cus_name,
+                author: Search_employee_id('NL-AWS-CS'),//NL-AWS-CS
+                recipients: invoice_groups_email,
+                cc:salesRep_email,
+                subject: '【測試中請勿理會】【博弘雲端科技(股)公司】催收帳款通知信 - '+cus_name,
                 body: xmlStr,
                 relatedRecords: { entityId: [cus_id] }      
                 });
@@ -174,7 +215,52 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
     
 	}
 
- 
+    function Search_group(name){
+        var group_id='';
+        var entitygroupSearchObj = search.create({
+            type: "entitygroup",
+            filters:
+            [
+               ["groupname","is",name]
+            ],
+            columns:
+            [
+               search.createColumn({
+                  name: "groupname",
+                  sort: search.Sort.ASC,
+                  label: "Name"
+               })             
+            ]
+         });
+         var searchResultCount = entitygroupSearchObj.runPaged().count;
+         log.debug("entitygroupSearchObj result count",searchResultCount);
+         entitygroupSearchObj.run().each(function(result){
+            group_id=result.id;
+            return true;
+         });
+         
+         return group_id;
+    }
+    function Search_employee_id(name){
+        var employee_id='';
+        var employeeSearchObj = search.create({
+            type: "employee",
+            filters:
+            [
+               ["entityid","is",name]
+            ],
+            columns:
+            [              
+            ]
+         });
+      
+         employeeSearchObj.run().each(function(result){
+            employee_id=result.id;
+            return true;
+         });
+         
+         return employee_id;
+    }
     return {
         onRequest: onRequest
     };

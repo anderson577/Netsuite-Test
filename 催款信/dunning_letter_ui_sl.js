@@ -123,8 +123,12 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         var field_invoice_recipients = form.addField({
             id : 'custpage_invoice_recipients',
             type : ui.FieldType.MULTISELECT,
-            label : 'Billing Portal發票收件聯絡人:',
+            label : 'Billing Portal催款信收件聯絡人:',
             container: 'filter1'           
+        });
+        field_invoice_recipients.addSelectOption({
+            value : 'nl-aws-adm@nextlink.com.tw#@0',
+            text : '1.NL-AWS-CS'
         });
         var invoice_recipients_L=Search_invoice_Contact(customer);
         log.debug('invoice_recipients_L',invoice_recipients_L);
@@ -189,6 +193,8 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         solist_invoice_department.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
         var solist_invoice_class = cuslist_invoice.addField({id: "custpage_invoice_class",type: ui.FieldType.TEXT,label: "Class"});
         solist_invoice_class.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
+        var solist_invoice_createby = cuslist_invoice.addField({id: "custpage_invoice_createby",type: ui.FieldType.TEXT,label: "Create By"});
+        solist_invoice_createby.updateDisplayType({ displayType: ui.FieldDisplayType.READONLY });
       
 
         var j = 0;
@@ -280,6 +286,13 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                     line: j,
                     value: result.class
                 });             
+            }    
+            if(result.create_by){
+                cuslist_invoice.setSublistValue({
+                    id: 'custpage_invoice_createby',
+                    line: j,
+                    value: result.create_by
+                });             
             }                          
             j++
         });
@@ -317,7 +330,9 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 "AND", 
                 ["subsidiary","anyof","1"],
                 "AND", 
-                ["name","anyof",cus]
+                ["name","anyof",cus],
+                "AND", 
+                ["custbody21.group","anyof",Search_group('AWS TW CS Group')]            
             ],
             columns:
             [
@@ -340,7 +355,8 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                  }),
                  search.createColumn({name: "department", label: "BU"}),
                  search.createColumn({name: "classnohierarchy", label: "Class (no hierarchy)"}),
-                 search.createColumn({name: "salesrep", label: "Sales Rep"})
+                 search.createColumn({name: "salesrep", label: "Sales Rep"}),
+                 search.createColumn({name: "custbody21", label: "Create By"}),
             ]
          });
          var searchResultCount = transactionSearchObj.runPaged().count;
@@ -361,7 +377,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 vat_date:result.getValue('custbody10'),
                 department:result.getText('department'),
                 class:result.getText('classnohierarchy'),
-               
+                create_by:result.getText('custbody21'),             
             });
             return true;
          });
@@ -427,7 +443,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
          var searchResultCount = contactSearchObj.runPaged().count;
          log.debug("contactSearchObj result count",searchResultCount);
          var contact_L=[];
-         var ind=0;
+         var ind=1;
          contactSearchObj.run().each(function(result){
             var groups_email=result.getValue({name: "custentity_invoice_groups_email", label: "Groups Email"});
             if(groups_email!=''){
@@ -448,6 +464,34 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
 
          return contact_L;
     }
+
+    function Search_group(name){
+        var group_id='';
+        var entitygroupSearchObj = search.create({
+            type: "entitygroup",
+            filters:
+            [
+               ["groupname","is",name]
+            ],
+            columns:
+            [
+               search.createColumn({
+                  name: "groupname",
+                  sort: search.Sort.ASC,
+                  label: "Name"
+               })             
+            ]
+         });
+         var searchResultCount = entitygroupSearchObj.runPaged().count;
+         log.debug("entitygroupSearchObj result count",searchResultCount);
+         entitygroupSearchObj.run().each(function(result){
+            group_id=result.id;
+            return true;
+         });
+         
+         return group_id;
+    }
+
     return {
         onRequest: onRequest
     }

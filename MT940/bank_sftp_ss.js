@@ -18,7 +18,7 @@
         });
         log.debug('companyid',companyid);
        
-        path=companyid.indexOf('_SB1')==-1?'/Pending/':'/Pending(SB)/';
+        path=companyid.indexOf('_SB1')==-1?'/Pending/':'/Pending/';//!!!!上正式區須調整
         move_path=companyid.indexOf('_SB1')==-1?'/Archive/':'/Archive(SB)/';
        
         var objConnection = sftp.createConnection({
@@ -34,9 +34,9 @@
         var folderObj = file.load({
         id: '../MT940F/mt940_folder.txt'
         });
-        LoadData(objConnection,'Citi',folderObj,'customscript_load_mt940_sl','customdeploy_load_mt940_sl');//花旗銀行
-        LoadData(objConnection,'Esun',folderObj,'customscript_load_esunbank_sl','customdeploy_load_esunbank_sl');//玉山銀行
-        LoadData(objConnection,'Land',folderObj,'customscript_load_landbank_sl','customdeploy_load_landbank_sl');//土地銀行 
+        LoadData(objConnection,'Citi',folderObj);//花旗銀行
+        LoadData(objConnection,'Esun',folderObj);//玉山銀行
+        LoadData(objConnection,'Land',folderObj);//土地銀行 
 
      } catch (error) {
       log.debug('error',error);
@@ -58,7 +58,7 @@
      
   }
 
-  function LoadData(objConnection,bank,folderObj,scriptId,deploymentId){
+  function LoadData(objConnection,bank,folderObj){
     var file_list = objConnection.list({path: path+bank})
     log.debug('file_list',file_list)
     for(var i = 0; i < file_list.length; i++){

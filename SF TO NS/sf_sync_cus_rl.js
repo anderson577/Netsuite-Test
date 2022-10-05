@@ -677,7 +677,9 @@
             type: "employee",
             filters:
             [
-               ["custentity_sf_id","startswith",id]
+               ["custentity_sf_id","startswith",id],
+               "AND",
+               ["isinactive","is","F"]
             ],
             columns:
             [             
