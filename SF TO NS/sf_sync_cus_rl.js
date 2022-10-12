@@ -121,6 +121,7 @@
                         name:cus_name,
                         subsidiary:cus_subsidiary,
                         stage:cus_stage,
+                        status:status_tra(old_cus_rec.getText('entitystatus')),
                         vatregnumber:cus_vatregnumber,
                         terms:old_cus_rec.getText('terms'),
                         is_parent_company:old_cus_rec.getValue('custentity_is_parent_company'),     
@@ -182,6 +183,7 @@
                         name:opp_altname.altname,
                         subsidiary:opp_new_rec.getText('subsidiary'),
                         stage:'Opportunitites',
+                        status:status_tra(opp_new_rec.getText('entitystatus')),
                         vatregnumber:opp_new_rec.getValue('vatregnumber'),
                         terms:opp_new_rec.getText('terms'),
                         is_parent_company:opp_new_rec.getValue('custentity_is_parent_company'),   
@@ -343,6 +345,7 @@
                         name:cus_altname.altname,
                         subsidiary:cus_rec.getText('subsidiary'), 
                         stage:stage,
+                        status:status_tra(cus_rec.getText('entitystatus')),
                         vatregnumber:cus_rec.getValue('vatregnumber')==''?'N/A':cus_rec.getValue('vatregnumber'),
                         terms:cus_rec.getText('terms'),
                         is_parent_company:cus_rec.getValue('custentity_is_parent_company'),                 
@@ -697,6 +700,13 @@
          });
 
          return employee_id;
+    }
+    function status_tra(name){
+        name=name.replace('可能的顧客','OPPORTUNITIES');
+        name=name.replace('潛在客戶','PROSPECT');
+        name=name.replace('顧客','CUSTOMER');
+
+        return name;
     }
     return {     
         get: doGet,

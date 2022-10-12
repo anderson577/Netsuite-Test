@@ -94,6 +94,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                     name:cus_rec.altname,
                     subsidiary:subsidiary_rec.getValue('name'),
                     stage:stage,
+                    status:status_tra(rec.getText('entitystatus')),
                     vatregnumber:rec.getValue('vatregnumber'),
                     terms:rec.getText('terms'),
                     sf_id:sf_id,
@@ -152,7 +153,13 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
           
         }
     }
-    
+    function status_tra(name){
+        name=name.replace('可能的顧客','OPPORTUNITIES');
+        name=name.replace('潛在客戶','PROSPECT');
+        name=name.replace('顧客','CUSTOMER');
+
+        return name;
+    }
 
     return {
         beforeLoad: beforeLoad,

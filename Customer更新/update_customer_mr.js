@@ -2,8 +2,6 @@
  * @NApiVersion 2.0
  * @NScriptType MapReduceScript
  */
-// var SAVED_SEARCH_ID = 'customsearch127';
-
 define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','N/action'],
     function(search, record, runtime, error, format, config,actionMod)
     {
@@ -14,8 +12,8 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                 type: "customer",
                 filters:
                 [
-                   ["status","anyof","16"],//is Customer-Lost
-                   "AND", 
+                //    ["status","anyof","16"],//is Customer-Lost
+                //    "AND", 
                    ["isinactive","is","F"]
                 ],
                 columns:
