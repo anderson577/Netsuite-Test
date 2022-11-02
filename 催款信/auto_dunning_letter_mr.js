@@ -29,7 +29,11 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                      "AND", 
                      ["custbody21.group","anyof",Search_group('AWS TW CS Group')], 
                      "AND", 
-                     ["customer.custentity_dunning_enable","is","T"]
+                     ["customer.custentity_dunning_enable","is","T"],
+                     "AND", 
+                     ["customer.custentity_invoice_groups_email","isnotempty",""],
+                     "AND", 
+                     ["custbody10","isnotempty",""]
                   ],
                   columns:
                   [
@@ -79,6 +83,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
           var searchResult = JSON.parse(context.value);
           log.debug('searchResult',searchResult);
           try{
+            var cus_name=searchResult.values['GROUP(entity)'].text;
             var cus_id=searchResult.values['GROUP(internalid.customer)'].value;
             var messageSearchObj = search.create({
                type: "message",
@@ -102,7 +107,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                ]
             });
             var searchResultCount = messageSearchObj.runPaged().count;
-            log.debug(cus_id+'-searchResultCount',searchResultCount);
+            log.debug(cus_name+'-2周內信數',searchResultCount);
             if(searchResultCount==0){
                var scriptUrl = url.resolveScript({
                   scriptId: 'customscript_dunning_letter_sl',
@@ -117,6 +122,22 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                    var rec_status= response.body;
                    
                    log.debug(cus_id+'_rec_status',rec_status); 
+                   if(rec_status=='success'){
+                     var cus_rec = record.load({
+                        type: 'customer', 
+                        id: cus_id,
+                        isDynamic: false,
+                    });
+                    var date = new Date();
+                    var TAIPEI_current_date = format.format({
+                        value: date,
+                        type: format.Type.DATETIMETZ,
+                        timezone: format.Timezone.ASIA_TAIPEI
+                    })             
+                    TAIPEI_current_date=TAIPEI_current_date.substr(0,TAIPEI_current_date.indexOf(' '));                 
+                    cus_rec.setText({fieldId: 'custentity_aws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
+                    cus_rec.save(); 
+                   }
             
             }
          

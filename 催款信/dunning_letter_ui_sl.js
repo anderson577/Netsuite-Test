@@ -126,10 +126,10 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             label : 'Billing Portal催款信收件聯絡人:',
             container: 'filter1'           
         });
-        field_invoice_recipients.addSelectOption({
-            value : 'nl-aws-adm@nextlink.com.tw#@0',
-            text : '1.NL-AWS-CS'
-        });
+        // field_invoice_recipients.addSelectOption({
+        //     value : 'nl-aws-adm@nextlink.com.tw#@0',
+        //     text : '1.NL-AWS-CS'
+        // });
         var invoice_recipients_L=Search_invoice_Contact(customer);
         log.debug('invoice_recipients_L',invoice_recipients_L);
         invoice_recipients_L.forEach(function (data){
@@ -332,7 +332,9 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 "AND", 
                 ["name","anyof",cus],
                 "AND", 
-                ["custbody21.group","anyof",Search_group('AWS TW CS Group')]            
+                ["custbody21.group","anyof",Search_group('AWS TW CS Group')],
+                "AND", 
+                ["custbody10","isnotempty",""]            
             ],
             columns:
             [
@@ -443,7 +445,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
          var searchResultCount = contactSearchObj.runPaged().count;
          log.debug("contactSearchObj result count",searchResultCount);
          var contact_L=[];
-         var ind=1;
+         var ind=0;
          contactSearchObj.run().each(function(result){
             var groups_email=result.getValue({name: "custentity_invoice_groups_email", label: "Groups Email"});
             if(groups_email!=''){

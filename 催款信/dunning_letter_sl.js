@@ -82,7 +82,7 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
              log.debug("transactionSearchObj result count",searchResultCount);
 
              var results = { lines: [] };
-             var cus_name='',salesRep_email=[],invoice_groups_email=[]; 
+             var cus_name='',salesRep_email=['nl-aws-adm@nextlink.com.tw'],invoice_groups_email=[]; 
              transactionSearchObj.run().each(function(result){
                 var currency=result.getText('currency');
                 var check_index=-1;
@@ -124,7 +124,7 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                 if(groups_email!=''){
                     invoice_groups_email=groups_email.split(','); 
                 }
-                      
+             
                 return true;
              });
              log.debug('salesRep_email', salesRep_email);
@@ -184,17 +184,24 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
             
         
             var xmlStr = renderer.renderAsString();
-            log.debug('xmlStr', xmlStr);
+            log.debug('xmlStr', xmlStr);          
             if(mode=='send'){
-                email.sendBulk({
-                author: Search_employee_id('NL-AWS-CS'),//NL-AWS-CS
-                recipients: invoice_groups_email,
-                cc:salesRep_email,
-                subject: '【測試中請勿理會】【博弘雲端科技(股)公司】催收帳款通知信 - '+cus_name,
-                body: xmlStr,
-                relatedRecords: { entityId: [cus_id] }      
-                });
-                context.response.write('success'); 
+                if(invoice_groups_email.length>0){
+                    email.sendBulk({
+                        author: Search_employee_id('NL-AWS-CS'),//NL-AWS-CS
+                        recipients: invoice_groups_email,
+                        cc:salesRep_email,
+                        subject: '【博弘雲端科技(股)公司】催收帳款通知信 - '+cus_name,
+                        body: xmlStr,
+                        relatedRecords: { entityId: [cus_id]}      
+                        }); 
+                        context.response.write('success'); 
+                }else{
+                    log.error('error_cus_id', cus_id);
+                    log.error('error', '無收件人');
+                    context.response.write('error'); 
+                }
+              
             }else if(mode=='view'){
                 context.response.renderPdf({
                     xmlString: xmlStr

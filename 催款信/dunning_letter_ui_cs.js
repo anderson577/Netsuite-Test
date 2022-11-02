@@ -3,9 +3,9 @@
  *@NScriptType ClientScript
  *@NModuleScope Public
  */
-define(['N/log', 'N/url', 'N/record', 'N/search', 'N/ui/message', 'N/currentRecord', 'N/https' , 'N/ui/dialog', 'N/runtime'],
+define(['N/log', 'N/url', 'N/record', 'N/search', 'N/ui/message', 'N/currentRecord', 'N/https' , 'N/ui/dialog', 'N/runtime', 'N/format'],
 
-function(log, url, record, search, message, currentRecord, https, dialog, runtime) {
+function(log, url, record, search, message, currentRecord, https, dialog, runtime,format) {
 
     
     function pageInit(context) {
@@ -160,6 +160,20 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
           var rec_status= response.body;
           
           if(rec_status=='success'){
+            var cus_rec = record.load({
+                type: 'customer', 
+                id: cus_id,
+                isDynamic: false,
+            });
+            var date = new Date();
+            var TAIPEI_current_date = format.format({
+                value: date,
+                type: format.Type.DATETIMETZ,
+                timezone: format.Timezone.ASIA_TAIPEI
+            })             
+            TAIPEI_current_date=TAIPEI_current_date.substr(0,TAIPEI_current_date.indexOf(' '));                 
+            cus_rec.setText({fieldId: 'custentity_aws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
+            cus_rec.save(); 
             Ext.Msg.show({title: 'success',width: 250,buttons: Ext.Msg.OK, msg:'已成功發送'});
           }else{
             Ext.Msg.show({title: 'error',width: 250,buttons: Ext.Msg.OK, msg:'出錯，請重新整理再試!'});

@@ -34,47 +34,47 @@ define([ 'N/file', 'N/encode', 'N/runtime', 'N/https', 'N/url', 'N/search', 'N/f
                        search.createColumn({name: "effectivedate", label: "Effective Date"}),
                        search.createColumn({name: "exchangerate", label: "Exchange Rate"})
                     ]
-                 });
-                var twdusd='',twdhkd='',twdcny=''; 
-
+                 });              
+                var basecurrency_L=['TWD','CNY','HKD'],transactioncurrency_L=['TWD','USD','HKD','CNY'];
+                var currency_data={};
                 currencyrateSearchObj.runPaged({pageSize : 100}).fetch({
                     index : 0
                 }).data.forEach(function (result){
                    
                     var basecurrency=result.getValue('formulatext1');
                     var transactioncurrency=result.getValue('formulatext2');
-                    if(basecurrency=='TWD'&&transactioncurrency=="USD"){
-                        if(twdusd=='')twdusd= result.getValue('exchangerate');
-                    }
-                    if(basecurrency=='TWD'&&transactioncurrency=="HKD"){
-                        if(twdhkd=='')twdhkd= result.getValue('exchangerate');
-                    } 
-                    if(basecurrency=='TWD'&&transactioncurrency=="CNY"){
-                        if(twdcny=='')twdcny= result.getValue('exchangerate');
-                    }
-                 
-                });
-                log.debug('twdusd',twdusd);
-                log.debug('twdhkd',twdhkd); 
-                log.debug('twdcny',twdcny);  
+                    if(basecurrency!=transactioncurrency){
+                        for(var i=0;i<basecurrency_L.length;i++){
+                            for(var j=0;j<transactioncurrency_L.length;j++){
+                                if(basecurrency==basecurrency_L[i]&&transactioncurrency==transactioncurrency_L[j]){
+                                    if(currency_data[basecurrency+transactioncurrency]==undefined){
+                                        var exchangerate=result.getValue('exchangerate');
+                                        if(exchangerate<1 && exchangerate!=0)exchangerate='0'+exchangerate;
+                                        currency_data[basecurrency+transactioncurrency]=exchangerate;
+                                    }
+                                }
+                            }
+                        }
 
+                    }                 
+                });
+                log.debug('currency_data',currency_data);
+                var currency_data_L=[];
+                for(var i=0;i<basecurrency_L.length;i++){
+                    for(var j=0;j<transactioncurrency_L.length;j++){
+                        if(basecurrency_L[i]!=transactioncurrency_L[j]){
+                            currency_data_L.push({
+                                transactioncurrency:transactioncurrency_L[j],
+                                basecurrency:basecurrency_L[i],                       
+                                exchangerate:currency_data[basecurrency_L[i]+transactioncurrency_L[j]]
+                            });
+                        }                     
+                    }
+                }
+                log.debug('currency_data_L',currency_data_L);
                 context.response.write(JSON.stringify({
                     status:'success',
-                    data:[{
-                        transactioncurrency:'USD',
-                        basecurrency:'TWD',                       
-                        exchangerate:twdusd
-                    },
-                    {
-                        transactioncurrency:'HKD',
-                        basecurrency:'TWD',                       
-                        exchangerate:twdhkd
-                    },
-                    {
-                        transactioncurrency:'CNY',
-                        basecurrency:'TWD',                       
-                        exchangerate:twdcny
-                    }],
+                    data:currency_data_L,
                     error_msg:''
                 }));
               
