@@ -8,7 +8,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
     function beforeLoad(context) {
         //log.debug('context', context);
         log.debug('executionContext', runtime.executionContext);
-        if (context.type == "copy"){        
+        if (context.type == "copy" || context.type == "create"){        
 
             var rec = context.newRecord;
             var entity=rec.getValue('entity');

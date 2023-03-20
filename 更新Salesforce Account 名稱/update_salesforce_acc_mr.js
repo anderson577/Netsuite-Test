@@ -9,12 +9,11 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
     {
         function getInputData(context){
             log.debug('In Get Input data Stage', context);
-
             var customrecord_sf_accountSearchObj = search.create({
                 type: "customrecord_sf_account",
                 filters:
                 [
-                   ["formulatext: CASE WHEN UPPER({custrecord_sf_acc_customer.altname}) LIKE UPPER( '%'||{custrecord_sf_acc_name}||'%') THEN 'Y' END ","isempty",""]
+                   ["formulanumeric: case when {name}= {custrecord_correct_name} then 1 else 0 end","equalto","0"]
                 ],
                 columns:
                 [
@@ -23,26 +22,22 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                       sort: search.Sort.ASC,
                       label: "Name"
                    }),
-                   search.createColumn({name: "custrecord_sf_acc_bu", label: "Business Unit (BU)"}),
-                   search.createColumn({name: "custrecord_sf_acc_customer", label: "Customer"}),
+                   search.createColumn({name: "custrecord_correct_name", label: "Correct Name"}),
                    search.createColumn({
-                      name: "formulatext1",
-                      formula: "CASE WHEN {custrecord_sf_acc_customer.isperson}='T' THEN  {custrecord_sf_acc_customer.altname} ELSE {custrecord_sf_acc_customer.companyname} END ",
+                      name: "formulatext",
+                      formula: "CASE WHEN {custrecord_sf_acc_customer.isperson}='T' THEN {custrecord_sf_acc_customer.altname} ELSE {custrecord_sf_acc_customer.companyname} END ",
                       label: "客戶名稱"
                    }),
+                   search.createColumn({name: "custrecord_sf_acc_bu", label: "Business Unit (BU)"}),
+                   search.createColumn({name: "custrecord_sf_acc_customer", label: "Customer"}),
                    search.createColumn({name: "internalid", label: "Internal ID"}),
                    search.createColumn({name: "custrecord_sf_acc_id", label: "Salesforce Account ID"}),
-                   search.createColumn({name: "created", label: "Date Created"}),
-                   search.createColumn({
-                      name: "formulatext2",
-                      formula: "CASE WHEN UPPER({custrecord_sf_acc_customer.altname}) LIKE UPPER( '%'||{custrecord_sf_acc_name}||'%') THEN 'Y' END ",
-                      label: "名稱檢查"
-                   })
+                   search.createColumn({name: "created", label: "Date Created"})
                 ]
              });
              var searchResultCount = customrecord_sf_accountSearchObj.runPaged().count;
-             log.debug("customrecord_sf_accountSearchObj result count",searchResultCount);
-               
+             log.debug("customrecord_sf_accountSearchObj result count",searchResultCount);        
+          
         
             
             return customrecord_sf_accountSearchObj;
@@ -58,9 +53,8 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                 id: searchResult.id,
                 isDynamic: false,
             }); 
-            objRecord.setValue({fieldId: 'custrecord_sf_acc_name',value:searchResult.values['formulatext1'],ignoreFieldChange: true});
-            var name=searchResult.values['formulatext1']+"("+searchResult.values['custrecord_sf_acc_bu'].text+")";           
-            objRecord.setValue({fieldId: 'name',value:name,ignoreFieldChange: true});           
+            objRecord.setValue({fieldId: 'custrecord_sf_acc_name',value:searchResult.values['formulatext'],ignoreFieldChange: true});           
+            objRecord.setValue({fieldId: 'name',value:searchResult.values['custrecord_correct_name'],ignoreFieldChange: true});           
             objRecord.save({
                 enableSourcing: false,
                 ignoreMandatoryFields: true

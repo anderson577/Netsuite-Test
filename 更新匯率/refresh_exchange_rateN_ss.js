@@ -10,7 +10,7 @@
      var today=formatDate(new Date());
      try {
         var response1 = https.get({
-           url: 'https://fda68.datagove.com/Search.aspx?q=%E8%A1%9B%E9%83%A8%E9%86%AB%E5%99%A8%E8%BC%B8%E5%A3%B9%E5%AD%97%E7%AC%AC013962%E8%99%9F',
+           url: 'https://www.uobgroup.com/online-rates/foreign-exchange-rates-against-singapore-dollar.page',
            headers: {
             'User-Agent': 'Mozilla/5',
             "Accept": "*/*"         
@@ -20,16 +20,18 @@
         if(response1.code=="200"){
            var body=response1.body;          
            log.debug('body', body);
-           var fileObj = file.create({
-            name: 'test_'+format.format({value: new Date(), type: format.Type.DATETIMETZ, timezone: format.Timezone.ASIA_TAIPEI}),
-            fileType: file.Type.ZIP,
-            contents: body
-            });
-            var folderObj = file.load({
-               id: '../Exchange Rate CSV/Exchange Rate CSV.txt'
-            });
-            fileObj.folder = folderObj.folder;
-            fileObj.save();
+           var tt=body.split('AUSTRALIAN DOLLAR')[1];
+           log.debug('tt', tt);
+         //   var fileObj = file.create({
+         //    name: 'test_'+format.format({value: new Date(), type: format.Type.DATETIMETZ, timezone: format.Timezone.ASIA_TAIPEI}),
+         //    fileType: file.Type.ZIP,
+         //    contents: body
+         //    });
+         //    var folderObj = file.load({
+         //       id: '../Exchange Rate CSV/Exchange Rate CSV.txt'
+         //    });
+         //    fileObj.folder = folderObj.folder;
+         //    fileObj.save();
             // var str=body.split('進口人用醫療器材應');
             // log.debug('str-length', str.length);
             // log.debug('str-length', str[1]);

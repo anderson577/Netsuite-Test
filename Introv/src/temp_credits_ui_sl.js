@@ -11,7 +11,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
         var request  = context.request;
         var response = context.response;
         // log.debug('context',context)
-        //log.debug('runtime', runtime.getCurrentScript().getParameter({name: 'custscript_iv_tc_araccount'}))
+        // log.debug('runtime', runtime.getCurrentScript().getParameter({name: 'custscript_iv_labor_acc'}))
 
         if (request.method === 'GET'){
             
@@ -119,6 +119,18 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
                     container: 'filter2', 
                 });
                 field_invamt.updateDisplayType({ displayType: ui.FieldDisplayType.DISABLED }); 
+
+                var filter3 = form.addFieldGroup({
+                    id: 'filter3',
+                    label: ' '
+                });
+
+                var field_memo = form.addField({ 
+                    id: 'custpage_tc_memo', 
+                    label: 'Memo', 
+                    type: ui.FieldType.TEXT,
+                    container: 'filter3', 
+                });
     
                 var tc_list = form.addSublist({
                     id : "custpage_tc_tclist",
@@ -186,6 +198,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
                         custscript_iv_tc_tcamt: request.parameters.custpage_tc_tcamt,
                         custscript_iv_tc_invamt: request.parameters.custpage_tc_invamt,
                         custscript_iv_tc_currency: request.parameters.custpage_tc_currency,
+                        custscript_iv_tc_memo: request.parameters.custpage_tc_memo
                     };										
                     mrTaskId = mrTask.submit();
 					// return false;
@@ -368,12 +381,10 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
             type: config.Type.COMPANY_PREFERENCES
         });
 
-        var tc_account = runtime.getCurrentScript().getParameter({name: 'custscript_iv_tc_araccount'});
-
         var filters = [
             ["type","anyof", configRecObj.getValue('custscript_iv_tc_type_id')], 
             "AND", 
-            ["account","anyof",tc_account], 
+            ["account","anyof", configRecObj.getValue('custscript_iv_tc_araccount')], 
             "AND", 
             ["amountremainingisabovezero","is","T"], 
             "AND", 

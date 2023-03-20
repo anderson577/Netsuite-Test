@@ -109,6 +109,12 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/email', '
                 });
 
                 jnal_rec.setValue({
+                    fieldId: "memo",
+                    value:  runtime.getCurrentScript().getParameter({name: 'custscript_iv_tc_memo'}),
+                    ignoreFieldChange: false
+                });
+
+                jnal_rec.setValue({
                     fieldId: "approvalstatus",
                     value:  "2",
                     ignoreFieldChange: false

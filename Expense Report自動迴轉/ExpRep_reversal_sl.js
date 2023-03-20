@@ -95,18 +95,19 @@ function( record, search, file, render, log, format, https, url, runtime) {
             for (var i = 0; i < expenseLinecount; i++) {
                 var expens_account= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'expenseaccount',line:i});
                 var expens_amount= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'amount',line:i});
+                var expens_grossamt= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'grossamt',line:i});
                 var expens_department= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'department',line:i});
                 var expens_class= exprept_rec.getSublistValue({sublistId: 'expense',fieldId: 'class',line:i});
                 journal_rec.insertLine({sublistId: 'line',line: line});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'account',value: expens_account});
-                journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'credit',value: expens_amount});
+                journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'credit',value: expens_grossamt==''?expens_amount:expens_grossamt});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'memo',value: memo});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'department',value: expens_department});
                 journal_rec.setCurrentSublistValue({sublistId: 'line',fieldId: 'class',value: expens_class});
                 journal_rec.commitLine({sublistId: 'line'});
                 line++;
             }
-            log.debug('journal_rec',journal_rec);
+            log.debug('journal_rec',journal_rec); 
             journal_rec.save({
                 enableSourcing: false,
                 ignoreMandatoryFields: true

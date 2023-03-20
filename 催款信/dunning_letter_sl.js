@@ -22,26 +22,13 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
         var mode = context.request.parameters.mode;
         var inv_L = context.request.parameters.inv_L;
         var send_L = context.request.parameters.send_L;
+        var bu = context.request.parameters.bu;
+        log.debug('bu', bu);
         if(inv_L!='all')inv_L=JSON.parse(inv_L);
         log.debug('cus_id', cus_id);
         try {
-            var filter=[
-                ["mainline","is","T"], 
-                "AND", 
-                ["duedate","onorbefore","lastweektodate"], 
-                "AND", 
-                ["status","anyof","CustInvc:A"], 
-                "AND", 
-                ["custbody1","isnotempty",""], 
-                "AND", 
-                ["department","anyof","1"], 
-                "AND", 
-                ["subsidiary","anyof","1"], 
-                "AND", 
-                ["custbody21.group","anyof",Search_group('AWS TW CS Group')],                
-                "AND", 
-                ["name","anyof",cus_id]
-            ];
+            var filter=invoice_filter(bu,cus_id);
+         
             if(inv_L!='all'){
                 filter.push("AND");               
                 var id_f=["internalid","anyof"];
@@ -267,6 +254,45 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
          });
          
          return employee_id;
+    }
+    function invoice_filter(bu,cus_id){
+        var filter=[];
+        if(bu=="AWS"){
+            filter=[
+                ["mainline","is","T"], 
+                "AND", 
+                ["duedate","onorbefore","lastweektodate"], 
+                "AND", 
+                ["status","anyof","CustInvc:A"], 
+                "AND", 
+                ["custbody1","isnotempty",""], 
+                "AND", 
+                ["department","anyof","1"], 
+                "AND", 
+                ["subsidiary","anyof","1"], 
+                "AND", 
+                ["custbody21.group","anyof",Search_group('AWS TW CS Group')],                
+                "AND", 
+                ["name","anyof",cus_id]
+            ];
+        }
+        if(bu=="GCP"){
+            filter=[
+                ["mainline","is","T"], 
+                "AND", 
+                ["duedate","onorbefore","lastweektodate"], 
+                "AND", 
+                ["status","anyof","CustInvc:A"], 
+                "AND", 
+                ["custbody1","isnotempty",""], 
+                "AND", 
+                ["department","anyof","2"],              
+                "AND", 
+                ["name","anyof",cus_id]
+            ];
+        }
+
+        return filter;
     }
     return {
         onRequest: onRequest

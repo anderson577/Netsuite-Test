@@ -126,6 +126,12 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/task', 'N
                     ignoreFieldChange: false
                 });
 
+                // ca_rec.setValue({
+                //     fieldId: "custrecord_iv_cl_accounting",
+                //     value:  runtime.getCurrentScript().getParameter({name: 'custscript_iv_cl_accounting'}),
+                //     ignoreFieldChange: false
+                // });
+
                 var caid = ca_rec.save();
 
                 log.debug('totalamt', totalamt)

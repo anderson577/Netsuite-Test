@@ -54,11 +54,11 @@ function(runtime, search, record, format, url, task) {
 
             // log.debug( "Remaining governance units 2: ", scriptObj.getRemainingUsage() );
 
-//            var creditlimit = search.lookupFields({
-//                type: "customer",
-//                id: newRecord.getValue('custrecord_iv_cl_customer'),
-//                columns: ['creditlimit']
-//            }).creditlimit;
+            var creditlimit = search.lookupFields({
+                type: "customer",
+                id: newRecord.getValue('custrecord_iv_cl_customer'),
+                columns: ['creditlimit']
+            }).creditlimit;
             // log.debug('creditlimit', creditlimit)
             // log.debug( "Remaining governance units 3: ", scriptObj.getRemainingUsage() );
 
@@ -66,8 +66,7 @@ function(runtime, search, record, format, url, task) {
                 type: 'customer',
                 id: newRecord.getValue('custrecord_iv_cl_customer'),
                 values: {
-                    'creditlimit': Number(ori_creditlimit) + Number(newRecord.getValue('custrecord_iv_cl_creditaplc_amt')),
-                    //'creditlimit': Number(creditlimit) + Number(newRecord.getValue('custrecord_iv_cl_creditaplc_amt')) + Number(ori_balance),
+                    'creditlimit': Number(creditlimit) + Number(newRecord.getValue('custrecord_iv_cl_creditaplc_amt')) + Number(ori_balance),
                     // 'creditlimit': 1600000,
                 }
             });
@@ -90,7 +89,7 @@ function(runtime, search, record, format, url, task) {
                 ]
             });
             var searchResultCount = salesorderSearchObj.runPaged().count;
-            // log.debug("salesorderSearchObj result count",searchResultCount);
+            log.debug("salesorderSearchObj result count",searchResultCount);
             salesorderSearchObj.run().each(function(result){
                 // .run().each has a limit of 4,000 results
 
@@ -144,15 +143,7 @@ function(runtime, search, record, format, url, task) {
                     'creditlimit': Number(cl_cus_creditlimit)
                 }
             });
-          
-            record.submitFields({
-                type: newRecord.type,
-                id: newRecord.id,
-                values: {
-                    'custrecord_iv_err_message': e.message
-                }
-            });
-          
+
             return "error"
             
         }               

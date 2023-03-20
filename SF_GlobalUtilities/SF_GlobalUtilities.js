@@ -247,6 +247,7 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                 gui_date:rec.getValue('custbody10')!=''?parseDate(rec.getValue('custbody10')):'',
                 startdate:rec.getValue('startdate')!=''?parseDate(rec.getValue('startdate')):'',
                 enddate:rec.getValue('enddate')!=''?parseDate(rec.getValue('enddate')):'',
+                duedate:rec.getValue('duedate')!=''?parseDate(rec.getValue('duedate')):'',
                 memo:rec.getValue('memo'),
                 itemlist:item_L
             } }; 

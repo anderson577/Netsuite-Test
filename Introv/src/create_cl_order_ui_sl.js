@@ -235,7 +235,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task) {
 
         if (request.parameters.custpage_cl_salesrep !== undefined && request.parameters.custpage_cl_salesrep != '' && request.parameters.custpage_cl_salesrep != null){
             filters.push("AND");
-            filters.push(["custpage_cl_salesrep", "anyof", request.parameters.custpage_cl_salesrep]);
+            filters.push(["salesrep", "anyof", request.parameters.custpage_cl_salesrep]);
         }
 
         var transactionSearchObj = search.create({

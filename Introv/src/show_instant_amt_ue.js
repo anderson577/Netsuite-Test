@@ -23,7 +23,6 @@ define(['N/record', 'N/runtime', 'N/config', 'N/search'], function(record, runti
                 ignoreFieldChange: false
             });
 
-
             rec.setValue({
                 fieldId: "custrecord_iv_cl_inst_unbilledorders",
                 value: cus_rec.getValue('unbilledorders'),

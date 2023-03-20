@@ -38,7 +38,14 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
 
 
     function layoutForm(form){
-
+        var budata = form.addField({ 
+            id: 'budata', 
+            label: 'Data', 
+            type: ui.FieldType.TEXTAREA 
+        });
+        budata.updateDisplayType({ displayType: ui.FieldDisplayType.HIDDEN });
+        budata.defaultValue = Use_BU;
+        
         // log.debug('subid', subid)
         form.addButton({
             id : 'custpage_filter_button',
@@ -67,6 +74,13 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
     }
 
     function post_layoutForm(form,context){
+        var budata = form.addField({ 
+            id: 'budata', 
+            label: 'Data', 
+            type: ui.FieldType.TEXTAREA 
+        });
+        budata.updateDisplayType({ displayType: ui.FieldDisplayType.HIDDEN });
+        budata.defaultValue = Use_BU;
 
         // log.debug('subid', subid)
         form.addButton({
@@ -123,14 +137,18 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         var field_invoice_recipients = form.addField({
             id : 'custpage_invoice_recipients',
             type : ui.FieldType.MULTISELECT,
-            label : 'Billing Portal催款信收件聯絡人:',
+            label : Use_BU=='AWS'?'Billing Portal催款信收件聯絡人:':'催款信收件聯絡人',
             container: 'filter1'           
         });
         // field_invoice_recipients.addSelectOption({
         //     value : 'nl-aws-adm@nextlink.com.tw#@0',
         //     text : '1.NL-AWS-CS'
         // });
-        var invoice_recipients_L=Search_invoice_Contact(customer);
+        var invoice_recipients_L=[];
+        if(Use_BU=='AWS')invoice_recipients_L=Search_invoice_Contact(customer);
+        if(Use_BU=='GCP')invoice_recipients_L=Search_gcp_invoice_Contact(customer);
+        if(Use_BU=='GWS')invoice_recipients_L=Search_gws_invoice_Contact(customer);
+        
         log.debug('invoice_recipients_L',invoice_recipients_L);
         invoice_recipients_L.forEach(function (data){
             field_invoice_recipients.addSelectOption({
@@ -138,10 +156,29 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 text : data.name
             });
         });
+
+
+        // var field_sales_team = form.addField({
+        //     id : 'custpage_sales_team',
+        //     type : ui.FieldType.MULTISELECT,
+        //     label : 'Sales Team:',
+        //     container: 'filter1'           
+        // });
+     
+        // var salesteam_recipients_L=Search_sales_Contact(customer);
+        // log.debug('salesteam_recipients_L',salesteam_recipients_L);
+        // salesteam_recipients_L.forEach(function (data){
+        //     field_sales_team.addSelectOption({
+        //         value : data.email,
+        //         text : data.name
+        //     });
+        // });
        
         
      
-        var invoice_data=search_invoice_data(customer);
+        var invoice_data;
+        if(Use_BU=='AWS')invoice_data=search_invoice_data(customer);
+        if(Use_BU=='GCP')invoice_data=search_gcp_invoice_data(customer);
         var newtab = form.addTab({ id : 'custpage_invoicetab', label : '客戶發票清單' });   
     
 
@@ -386,6 +423,76 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
          
          return data;
     }
+    function search_gcp_invoice_data(cus){
+        if(cus=='')return [];
+        var transactionSearchObj = search.create({
+            type: "transaction",
+            filters:
+            [
+                ["mainline","is","T"], 
+                "AND", 
+                ["duedate","onorbefore","lastweektodate"], 
+                "AND", 
+                ["status","anyof","CustInvc:A"], 
+                "AND", 
+                ["custbody1","isnotempty",""], 
+                "AND", 
+                ["department","anyof","2"],              
+                "AND", 
+                ["name","anyof",cus],              
+                "AND", 
+                ["custbody10","isnotempty",""]            
+            ],
+            columns:
+            [
+                search.createColumn({name: "trandate",label: "Date"}),
+                 search.createColumn({name: "duedate", label: "Due Date/Receive By"}),
+                 search.createColumn({name: "type", label: "Type"}),
+                 search.createColumn({name: "tranid",label: "Document Number",sort: search.Sort.DESC,}),
+                 search.createColumn({name: "entity", label: "Name"}),
+                 search.createColumn({name: "statusref", label: "Status"}),
+                 search.createColumn({name: "trackingnumbers", label: "Tracking Numbers"}),
+                 search.createColumn({name: "memo", label: "Memo"}),
+                 search.createColumn({name: "currency", label: "Currency"}),
+                 search.createColumn({name: "fxamount", label: "Amount (Foreign Currency)"}),
+                 search.createColumn({name: "custbody1", label: "GUI/VAT"}),
+                 search.createColumn({name: "custbody10", label: "GUI/VAT Date"}),
+                 search.createColumn({
+                    name: "altname",
+                    join: "customer",
+                    label: "Name"
+                 }),
+                 search.createColumn({name: "department", label: "BU"}),
+                 search.createColumn({name: "classnohierarchy", label: "Class (no hierarchy)"}),
+                 search.createColumn({name: "salesrep", label: "Sales Rep"}),
+                 search.createColumn({name: "custbody21", label: "Create By"}),
+            ]
+         });
+         var searchResultCount = transactionSearchObj.runPaged().count;
+         log.debug("transactionSearchObj result count",searchResultCount);
+         var data=[]; 
+         transactionSearchObj.run().each(function(result){
+            data.push({
+                recordtype:result.recordType,
+                id:result.id,           
+                trandate:result.getValue('trandate'),
+                duedate:result.getValue('duedate'),
+                tranid:result.getValue('tranid'),
+                name:result.getText('entity'),
+                cus_id:result.getValue('entity'),             
+                currency:result.getText('currency'),          
+                amount:result.getValue('fxamount'),
+                vat:result.getValue('custbody1'),
+                vat_date:result.getValue('custbody10'),
+                department:result.getText('department'),
+                class:result.getText('classnohierarchy'),
+                create_by:result.getText('custbody21'),             
+            });
+            return true;
+         });
+         
+         return data;
+    }
     function Search_Contact(cus){
         if(cus=='')return [];
         var contactSearchObj = search.create({
@@ -462,6 +569,143 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             return true;
          });
          
+      
+
+         return contact_L;
+    }
+    function Search_gcp_invoice_Contact(cus){        
+      
+        if(cus=='')return [];
+        var contactSearchObj = search.create({
+            type: "customer",
+            filters:
+            [              
+               ["internalid","anyof",cus],           
+            ],
+            columns:
+            [                
+               search.createColumn({name: "custentity_gcp_invoice_groups_email", label: "Groups Email"})             
+            ]
+         });
+         var searchResultCount = contactSearchObj.runPaged().count;
+         log.debug("contactSearchObj result count",searchResultCount);
+         var contact_L=[];
+         var ind=0;
+         contactSearchObj.run().each(function(result){
+            var groups_email=result.getValue({name: "custentity_gcp_invoice_groups_email", label: "Groups Email"});
+            if(groups_email!=''){
+                groups_email=groups_email.split(';');
+                for(var i=0;i<groups_email.length;i++){
+                    contact_L.push({
+                        email:groups_email[i]+'#@'+ind,
+                        name:(ind+1)+'.'+groups_email[i]
+                    });
+                    ind++;
+                }            
+            }
+          
+            return true;
+         });
+         
+      
+
+         return contact_L;
+    }
+    function Search_gws_invoice_Contact(cus){        
+      
+        if(cus=='')return [];
+        var contactSearchObj = search.create({
+            type: "customer",
+            filters:
+            [              
+               ["internalid","anyof",cus],           
+            ],
+            columns:
+            [                
+               search.createColumn({name: "custentity_gws_invoice_groups_email", label: "Groups Email"})             
+            ]
+         });
+         var searchResultCount = contactSearchObj.runPaged().count;
+         log.debug("contactSearchObj result count",searchResultCount);
+         var contact_L=[];
+         var ind=0;
+         contactSearchObj.run().each(function(result){
+            var groups_email=result.getValue({name: "custentity_gws_invoice_groups_email", label: "Groups Email"});
+            if(groups_email!=''){
+                groups_email=groups_email.split(';');
+                for(var i=0;i<groups_email.length;i++){
+                    contact_L.push({
+                        email:groups_email[i]+'#@'+ind,
+                        name:(ind+1)+'.'+groups_email[i]
+                    });
+                    ind++;
+                }            
+            }
+          
+            return true;
+         });
+         
+      
+
+         return contact_L;
+    }
+
+
+    function Search_sales_Contact(cus){        
+          
+        if(cus=='')return [];
+        var contactSearchObj = search.create({
+            type: "customer",
+            filters:
+            [              
+               ["internalid","anyof",cus],           
+            ],
+            columns:
+            [                
+               search.createColumn({name: "salesteammember", label: "Sales Team Member"}),
+               search.createColumn({name: "salesrep", label: "Sales Rep"}),          
+            ]
+         });
+      
+         var sales_L=["internalid","anyof"],salesrep_id='';       
+         contactSearchObj.run().each(function(result){
+            var salesteammember=result.getValue('salesteammember');
+            if(salesteammember!=''){
+                sales_L.push(salesteammember);      
+            }
+            salesrep_id=result.getValue('salesrep');
+            return true;
+         });
+         
+         log.debug("sales_L",sales_L);
+         var employeeSearchObj = search.create({
+            type: "employee",
+            filters:
+            [
+                sales_L
+            ],
+            columns:
+            [
+               search.createColumn({
+                  name: "entityid",
+                  sort: search.Sort.ASC,
+                  label: "Name"
+               }),              
+               search.createColumn({name: "email", label: "Email"}),            
+              
+            ]
+         });
+         var contact_L=[];
+         var ind=0;
+         employeeSearchObj.run().each(function(result){
+            var email=result.getValue('email');
+            contact_L.push({
+                email:email+'#@'+ind,
+                name:(ind+1)+'.'+result.getValue('entityid')+(salesrep_id==result.id?' (PRIMARY)':'')+' - '+email
+            });
+            ind++;
+            return true;
+         });
       
 
          return contact_L;

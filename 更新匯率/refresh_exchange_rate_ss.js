@@ -44,7 +44,7 @@
            log.debug('ratedata', ratedata); 
          
            var BASE_CURRENCY=['TWD','HKD','CNY'];
-           var SOURCE_CURRENCY=['TWD','USD','HKD','JPY','CNY'];
+           var SOURCE_CURRENCY=['TWD','USD','HKD','JPY','CNY','SGD','MYR'];
            var csv_body='basecurrency,transactioncurrency,exchangerate,effectivedate\n';      
            for(var i=0;i<BASE_CURRENCY.length;i++){
               var data=find_data(ratedata,"幣別",BASE_CURRENCY[i]);
@@ -60,9 +60,11 @@
                  if(BASE_CURRENCY[i]!=SOURCE_CURRENCY[j]){
                     var S_data=find_data(ratedata,"幣別",SOURCE_CURRENCY[j]);
                     var S_exchange_rate_a=1;
-                    if(SOURCE_CURRENCY[j]!='TWD'){
+                    if(SOURCE_CURRENCY[j]!='TWD' && SOURCE_CURRENCY[j]!='MYR'){
                        //S_exchange_rate_a=(parseFloat(S_data['買入-即期'])+parseFloat(S_data['賣出-即期']))/2;
                        S_exchange_rate_a=parseFloat(S_data['賣出-即期']);
+                    }else if(SOURCE_CURRENCY[j]=='MYR'){
+                       S_exchange_rate_a=parseFloat(S_data['賣出-現金']);
                     }
                     log.debug('S_exchange_rate_a', S_exchange_rate_a);
                     var data_exchange_rate=(TWD_exchange*S_exchange_rate_a).toFixed(4);

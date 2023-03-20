@@ -29,19 +29,8 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
         if(entitystatus!=''){
             if(entitystatus==13||entitystatus==16){//客戶-Win,Lost Customer
                 var nameorig=rec.getValue('nameorig');
-                if(nameorig!=''){
-                    var vcc_num='',check_vacc_number='';
-                    if(subsidiary==1||subsidiary==4){//博弘台灣,宏庭台灣
-                        if(subsidiary==1)vcc_num='7653000';
-                        if(subsidiary==4)vcc_num='7654000';
-                        vcc_num=vcc_num+nameorig.substring(1,7);
-                        check_vacc_number=ser_checknumber(vcc_num);
-                    }else if(subsidiary==3||subsidiary==7){//博弘香港,宏庭香港 
-                        if(subsidiary==3)vcc_num='7061';
-                        if(subsidiary==7)vcc_num='7060';
-                        vcc_num=vcc_num+nameorig.substring(2,7);
-                        check_vacc_number=vcc_num;
-                    }                
+                if(nameorig!=''&& nameorig!=undefined){
+                    var check_vacc_number=get_vacc(nameorig,subsidiary);                             
                     log.debug("check_vacc_number", check_vacc_number);             
                     rec.setValue({fieldId: 'custentity_vacc_check_number',value:check_vacc_number,ignoreFieldChange: true});
                 }
@@ -54,7 +43,48 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
      
     }
 
-    function afterSubmit(context) {  
+    function afterSubmit(context) { 
+        if (context.type == "create"){          
+            var rec = record.load({
+                type: context.newRecord.type, 
+                id: context.newRecord.id,
+                isDynamic: false,
+            }); 
+            var entitystatus=rec.getValue({ fieldId: 'entitystatus' });
+            var subsidiary=rec.getValue({ fieldId: 'subsidiary' });
+            if(entitystatus!=''){
+                if(entitystatus==13||entitystatus==16){//客戶-Win,Lost Customer
+                    var nameorig=rec.getValue('nameorig');
+                    if(nameorig!=''&& nameorig!=undefined){
+                        var check_vacc_number=get_vacc(nameorig,subsidiary);                             
+                        log.debug("check_vacc_number", check_vacc_number);             
+                        rec.setValue({fieldId: 'custentity_vacc_check_number',value:check_vacc_number,ignoreFieldChange: true});
+                    }
+                }else{           
+                    rec.setValue({fieldId: 'custentity_vacc_check_number',value:'',ignoreFieldChange: true});
+                } 
+                
+                rec.save();
+                
+            }      
+        }      
+        
+    }
+    function get_vacc(nameorig,subsidiary){
+        var vcc_num='',check_vacc_number='';
+        if(subsidiary==1||subsidiary==4){//博弘台灣,宏庭台灣
+            if(subsidiary==1)vcc_num='7653000';
+            if(subsidiary==4)vcc_num='7654000';
+            vcc_num=vcc_num+nameorig.substring(1,7);
+            check_vacc_number=ser_checknumber(vcc_num);
+        }else if(subsidiary==3||subsidiary==7){//博弘香港,宏庭香港 
+            if(subsidiary==3)vcc_num='7061';
+            if(subsidiary==7)vcc_num='7060';
+            vcc_num=vcc_num+nameorig.substring(2,7);
+            check_vacc_number=vcc_num;
+        }
+        
+        return check_vacc_number;
     }
     function isNumeric(str) {
         if (typeof str != "string") return false // we only process strings!  

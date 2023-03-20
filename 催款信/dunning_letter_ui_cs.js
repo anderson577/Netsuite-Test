@@ -38,6 +38,14 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
                     value: null,
                 });
             }
+
+            
+            var sales_team_selectOptions = current_rec.getField({ fieldId: 'custpage_sales_team' });
+            if(sales_team_selectOptions!=null){                     
+                sales_team_selectOptions.removeSelectOption({
+                    value: null,
+                });
+            }
            
         }
     
@@ -90,14 +98,15 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
             alert('請至少選擇一張發票!');  
             return;
         } 
+        var bu=current_rec.getValue('budata');
 		var scriptUrl = url.resolveScript({
 			scriptId: 'customscript_dunning_letter_sl',
 			deploymentId: 'customdeploy_dunning_letter_sl',
 			returnExternalUrl: false,
-			params:{ cus_id:cus_id,mode:'view',inv_L:JSON.stringify(inv_id_L),send_L:''}
+			params:{ bu:bu,cus_id:cus_id,mode:'view',inv_L:JSON.stringify(inv_id_L),send_L:''}
         });
         log.debug("scriptUrl",scriptUrl)
-		
+		console.log('scriptUrl',scriptUrl);
 		window.open(scriptUrl, "_blank");
 
 	}
@@ -119,6 +128,14 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
                 if(email_L.indexOf(mail)==-1)email_L.push(mail);
             }
         }
+
+        // var sales_team_recipients=current_rec.getValue('custpage_sales_team');
+        // for (var i = 0; i < sales_team_recipients.length; i++) {
+        //     if(sales_team_recipients[i].indexOf('#@')!=-1){
+        //         var mail=sales_team_recipients[i].split('#@')[0];
+        //         if(email_L.indexOf(mail)==-1)email_L.push(mail);
+        //     }
+        // }
         console.log('email_L',email_L);
         if(email_L.length==0){
             alert('請至少選擇一位收件人!');  
@@ -143,11 +160,12 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
             alert('請至少選擇一張發票!');  
             return;
         } 
+        var bu=current_rec.getValue('budata');
 		var scriptUrl = url.resolveScript({
 			scriptId: 'customscript_dunning_letter_sl',
 			deploymentId: 'customdeploy_dunning_letter_sl',
 			returnExternalUrl: false,
-			params:{ cus_id:cus_id,mode:'send',inv_L:JSON.stringify(inv_id_L),send_L:email_L_str}
+			params:{ bu:bu,cus_id:cus_id,mode:'send',inv_L:JSON.stringify(inv_id_L),send_L:email_L_str}
         });
         log.debug("scriptUrl",scriptUrl)
         var domain_url = 'https://' + url.resolveDomain({

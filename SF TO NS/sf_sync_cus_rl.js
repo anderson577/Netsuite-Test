@@ -586,6 +586,7 @@
                 contact_rec.setValue({fieldId: 'custentity_sf_id',value:con_data.id,ignoreFieldChange: true});
                 contact_rec.setText({fieldId: 'custentity_sf_bu',text:con_data.BU,ignoreFieldChange: true});
                 contact_rec.setValue({fieldId: 'title',value:con_data.job_title,ignoreFieldChange: true});
+                contact_rec.setValue({fieldId: 'custentity_invoice_contact_person',value:con_data.contact_person,ignoreFieldChange: true});
              
                 var dress_linecount = contact_rec.getLineCount({ sublistId:'addressbook'});
                 for (var k = 0; k < dress_linecount; k++){  

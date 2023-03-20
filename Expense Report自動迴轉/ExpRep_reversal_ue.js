@@ -17,7 +17,7 @@ function(runtime,record,search,serverWidget,format) {
             log.debug('statusRef',statusRef);
             var payments= rec.getValue('payments');
             log.debug('payments',payments);
-            if(statusRef=='approvedByAcct' && payments=='F'){ 
+            if((statusRef=='approvedByAcct' || statusRef=='approvedByAcctOverride') && payments=='F'){ 
     
             
                 form.addButton({
