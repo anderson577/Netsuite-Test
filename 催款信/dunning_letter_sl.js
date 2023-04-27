@@ -38,16 +38,19 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                 filter.push(id_f);  
             }
             log.debug('filter', filter);
+            var gcp_eng=false;
             var transactionSearchObj = search.create({
                 type: "transaction",
                 filters:filter,
                 columns:
                 [                
                    search.createColumn({name: "currency", label: "Currency"}),
+                   search.createColumn({name: "tranid",label: "Document Number"}),
                    search.createColumn({name: "fxamount", label: "Amount (Foreign Currency)"}),
                    search.createColumn({name: "amount", label: "Amount"}),                
                    search.createColumn({name: "custbody1", label: "GUI/VAT"}),
                    search.createColumn({name: "custbody10",sort: search.Sort.ASC, label: "GUI/VAT Date"}),
+                   search.createColumn({name: "trandate", label: "Date"}),
                    search.createColumn({
                     name: "altname",
                     join: "customer",
@@ -59,9 +62,34 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                     label: "Invoice Delivery Group'S Email"
                  }),
                  search.createColumn({
+                    name: "custentity_gcp_invoice_groups_email",
+                    join: "customer",
+                    label: "GCP INVOICE DELIVERY GROUP'S EMAIL"
+                 }),
+                 search.createColumn({
+                    name: "custentity_gws_invoice_groups_email",
+                    join: "customer",
+                    label: "GWS INVOICE DELIVERY GROUP'S EMAIL"
+                 }),
+                 search.createColumn({
                     name: "email",
                     join: "salesRep",
                     label: "Email"
+                 }),
+                 search.createColumn({
+                    name: "entityid",
+                    join: "salesRep",
+                    label: "Name"
+                 }),
+                 search.createColumn({
+                    name: "custentity16",
+                    join: "salesRep",
+                    label: "Chinese Name"
+                 }),
+                 search.createColumn({
+                    name: "altphone",
+                    join: "salesRep",
+                    label: "OFFICE PHONE"
                  })
                 ]
              });
@@ -69,8 +97,41 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
              log.debug("transactionSearchObj result count",searchResultCount);
 
              var results = { lines: [] };
-             var cus_name='',salesRep_email=['nl-aws-adm@nextlink.com.tw'],invoice_groups_email=[]; 
+             var cus_name='',salesRep_email=[],invoice_groups_email=[];
+             if(bu=='AWS')salesRep_email.push('nl-aws-adm@nextlink.com.tw');
+             if(bu=='GCP')salesRep_email.push('gcp.billing@microfusion.cloud');
+             if(bu=='GWS')salesRep_email.push('gsuite.billing@microfusion.cloud');
+             
+             var GUI_VAT_Year='',GUI_VAT_Month='',ind=1,sales_tex='';
              transactionSearchObj.run().each(function(result){
+                var GUI_VAT_Date=result.getValue('custbody10');
+                if(GUI_VAT_Date==''||GUI_VAT_Date==undefined||GUI_VAT_Date==null){
+                    gcp_eng=true;
+                }
+                if(ind==1){
+                    GUI_VAT_Year=GUI_VAT_Date.split('/')[0];
+                    GUI_VAT_Month=GUI_VAT_Date.split('/')[1];
+                }
+                var sales_name=result.getValue({
+                    name: "entityid",
+                    join: "salesRep",
+                    label: "Name"
+                 });
+                var sales_chinese=result.getValue({
+                    name: "custentity16",
+                    join: "salesRep",
+                    label: "Chinese Name"
+                });
+                var sales_officephone=result.getValue({
+                    name: "altphone",
+                    join: "salesRep",
+                    label: "OFFICE PHONE"
+                });
+                if(sales_name!=''&&sales_chinese!=''){
+                    var officephone=sales_officephone.indexOf('#')==-1?'':'#'+sales_officephone.split('#')[1]+' ';
+                    var addtext=officephone+sales_chinese+'('+sales_name+') ';
+                    sales_tex=addtext;
+                }
                 var currency=result.getText('currency');
                 var check_index=-1;
                 for(var i=0;i<results.lines.length;i++){
@@ -86,18 +147,24 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                     });
                     check_index=results.lines.length-1;
                 } 
-                var same_gui=false;
-                for(var i=0;i<results.lines[check_index].data.length;i++){
-                    var line_data=results.lines[check_index].data[i];
-                    if(line_data.GUI_VAT==result.getValue('custbody1')){
-                        same_gui=true;
-                        line_data.fxamount+=parseFloat(result.getValue('fxamount'));
+                var same_gui=false;             
+                if(bu=='GCP' && gcp_eng==true){
+                    same_gui=false;
+                }else{
+                    for(var i=0;i<results.lines[check_index].data.length;i++){
+                        var line_data=results.lines[check_index].data[i];
+                        if(line_data.GUI_VAT==result.getValue('custbody1')){
+                            same_gui=true;
+                            line_data.fxamount+=parseFloat(result.getValue('fxamount'));
+                        }
                     }
                 }
                 if(same_gui==false){
-                    results.lines[check_index].data.push({                  
+                    results.lines[check_index].data.push({
+                        tranid:result.getValue('tranid'),               
                         GUI_VAT:result.getValue('custbody1'),
-                        GUI_VAT_Date:result.getValue('custbody10'),
+                        GUI_VAT_Date:GUI_VAT_Date,
+                        trandate:result.getValue('trandate'),
                         fxamount:parseFloat(result.getValue('fxamount'))                   
                     });    
                 }             
@@ -107,11 +174,17 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                 // if(salesRepEmail!=''&& salesRep_email.indexOf(salesRepEmail)==-1){
                 //     salesRep_email.push(salesRepEmail);
                 // } //09/29因為從BP過來的收件人已經包含業務，改成不寄送發票sales rep
-                var groups_email=result.getValue({name: "custentity_invoice_groups_email",join: "customer",label: "Invoice Delivery Group'S Email"});
+                var groups_email='';
+                if(bu=='AWS')groups_email=result.getValue({name: "custentity_invoice_groups_email",join: "customer",label: "Invoice Delivery Group'S Email"});
+                if(bu=='GCP')groups_email=result.getValue({name: "custentity_gcp_invoice_groups_email",join: "customer",label: "GCP INVOICE DELIVERY GROUP'S EMAIL"});
+                if(bu=='GWS')groups_email=result.getValue({name: "custentity_gws_invoice_groups_email",join: "customer",label: "GWS INVOICE DELIVERY GROUP'S EMAIL"});
+                
                 if(groups_email!=''){
-                    invoice_groups_email=groups_email.split(','); 
+                    if(bu=='AWS')invoice_groups_email=groups_email.split(',');
+                    if(bu=='GCP')invoice_groups_email=groups_email.split(';'); 
+                    if(bu=='GWS')invoice_groups_email=groups_email.split(';');  
                 }
-             
+                ind++;
                 return true;
              });
              log.debug('salesRep_email', salesRep_email);
@@ -143,8 +216,18 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
              	
     
             var html_url='';
-            if(mode=='send')html_url="../Html/dunning_letter.html";
-            if(mode=='view')html_url="../Html/dunning_letter_view.html";
+            if(mode=='send'){
+                if(bu=='AWS')html_url="../Html/dunning_letter.html";
+                if(bu=='GWS')html_url="../Html/dunning_letter_gws.html";
+                if(bu=='GCP' && gcp_eng==false)html_url="../Html/dunning_letter_gcp_chi.html";
+                if(bu=='GCP' && gcp_eng==true)html_url="../Html/dunning_letter_gcp_eng.html"; 
+            }          
+            if(mode=='view'){
+                if(bu=='AWS')html_url="../Html/dunning_letter_view.html";
+                if(bu=='GWS')html_url="../Html/dunning_letter_gws_view.html";
+                if(bu=='GCP' && gcp_eng==false)html_url="../Html/dunning_letter_gcp_chi_view.html";
+                if(bu=='GCP' && gcp_eng==true)html_url="../Html/dunning_letter_gcp_eng_view.html";
+            }
             var xmlTmplFile = file.load({
                     id: html_url ,
             });
@@ -159,8 +242,19 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
                 data: results
             });
             
+            var cus_rec = record.load({
+                type: 'customer', 
+                id: cus_id,
+                isDynamic: false,
+            }); 
+            var vacc_number=cus_rec.getValue('custentity_vacc_check_number');
+
             var Record = {
-                cus_name:cus_name       
+                cus_name:cus_name,
+                GUI_VAT_Year:GUI_VAT_Year,
+                GUI_VAT_Month:GUI_VAT_Month,
+                vacc_number:vacc_number,
+                sales_tex:sales_tex       
             }
 
             renderer.addCustomDataSource({
@@ -171,14 +265,24 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
             
         
             var xmlStr = renderer.renderAsString();
-            log.debug('xmlStr', xmlStr);          
+            log.debug('xmlStr', xmlStr);
+            var subject='';
+            if(bu=='AWS')subject='【博弘雲端科技(股)公司】催收帳款通知信 - ';
+            if(bu=='GWS')subject='【宏庭科技帳款通知】Google Workspace_';
+            if(bu=='GCP' && gcp_eng==false)subject='GCP_帳款逾期通知： ';
+            if(bu=='GCP' && gcp_eng==true)subject='GCP Payment Remind： ';
+
+            var author='';
+            if(bu=='AWS')author='NL-AWS-CS';
+            if(bu=='GWS')author='GWS宏庭科技帳務支援小組';
+            if(bu=='GCP')author='GCP Billing Team';
             if(mode=='send'){
                 if(invoice_groups_email.length>0){
                     email.sendBulk({
-                        author: Search_employee_id('NL-AWS-CS'),//NL-AWS-CS
+                        author: Search_employee_id(author),
                         recipients: invoice_groups_email,
                         cc:salesRep_email,
-                        subject: '【博弘雲端科技(股)公司】催收帳款通知信 - '+cus_name,
+                        subject: subject+cus_name,
                         body: xmlStr,
                         relatedRecords: { entityId: [cus_id]}      
                         }); 
@@ -280,15 +384,34 @@ function(record, search, file, render, log, format, https, url, runtime,email) {
             filter=[
                 ["mainline","is","T"], 
                 "AND", 
-                ["duedate","onorbefore","lastweektodate"], 
+                ["duedate","notonorafter","today"], 
+                "AND", 
+                ["status","anyof","CustInvc:A"],             
+                "AND", 
+                ["department","anyof","2"], //Google 
+                "AND", 
+                ["class","anyof","3","26","30","34","33","27"], //GCP / PS / MS / MS-G / ISV / Training           
+                "AND", 
+                ["name","anyof",cus_id] 
+            ];
+        }
+        if(bu=="GWS"){
+            filter=[
+                ["mainline","is","T"], 
+                "AND", 
+                ["duedate","notonorafter","today"], 
                 "AND", 
                 ["status","anyof","CustInvc:A"], 
                 "AND", 
                 ["custbody1","isnotempty",""], 
                 "AND", 
-                ["department","anyof","2"],              
+                ["department","anyof","2"], //Google 
                 "AND", 
-                ["name","anyof",cus_id]
+                ["class","anyof","4","31","14"], //G-Suite / HMH / HDE           
+                "AND", 
+                ["name","anyof",cus_id],              
+                "AND", 
+                ["custbody10","isnotempty",""]       
             ];
         }
 

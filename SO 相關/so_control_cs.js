@@ -6,13 +6,14 @@
 define(['N/currentRecord', 'N/record', 'N/search', 'N/url', 'N/log','N/runtime'], 
 function(currentRecord, record, search, url, log, runtime) {
   
-   
+    var total=0;
     function pageInit(context) {
         // log.debug('pageInit context', context)  
         try{
           
             var rec = context.currentRecord
             var copiedfrom=rec.getValue({ fieldId: 'copiedfrom' });
+            total=rec.getValue({ fieldId: 'total' });
             if(copiedfrom!=''){
                 var entity=rec.getValue("entity");
                 var entity_rec=record.load({
@@ -55,7 +56,14 @@ function(currentRecord, record, search, url, log, runtime) {
           
     }
   
-    function saveRecord(context) {     
+    function saveRecord(context) {
+        var rec = context.currentRecord  
+        var new_total= rec.getValue({ fieldId: 'total' });
+        //console.log('new_total: '+new_total)
+        //console.log('total: '+total)
+        if(new_total!==total&&total!=0){
+            alert('金額已異動 請確認!');  
+        }  
       
    
         return true;
@@ -67,7 +75,7 @@ function(currentRecord, record, search, url, log, runtime) {
   
    
     function fieldChanged(context) {
-     
+       
         
     }
     

@@ -149,7 +149,13 @@ define(['N/record', 'N/runtime', 'N/search', 'N/ui/serverWidget', 'N/format','N/
                     throw err;                               
                 }
             }                                                
-        }                  
+        }     
+        
+        var terms = rec.getValue('terms');
+        if(terms==8||terms==35){//Prepaid,Prepaid-未收到客戶基本資料表
+            rec.setValue({fieldId: 'custentity_gcp_dunning_enable',value:false,ignoreFieldChange: true});
+            rec.setValue({fieldId: 'custentity_gws_dunning_enable',value:false,ignoreFieldChange: true});
+        }
     }
 
     function afterSubmit(context) {  

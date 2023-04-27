@@ -1,0 +1,38 @@
+<head>
+
+    <style type="text/css">
+    
+    </style>
+</head>
+<body>  
+  <p>親愛的客戶，您好：</p>
+  貴司的GCP帳單已逾期，款項如下表所列。<br/>
+  <b style="color:blue;">請盡速確認帳單並安排付款，以免影響貴司使用權益，謝謝。</b><br/>
+  <br/>
+  【逾期帳款】
+  
+  <table cellpadding="2" cellspacing="0" class="border" style="margin-top:10px;border:1px solid black;" >
+    <tr>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票號碼</b></td>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票日期</b></td>
+      <td align="center" style="width: 140px;border:1px solid black;background-color:#B7E1CD;"><b>發票金額</b></td>	
+    </tr>
+    <#list result.lines as currency_line>
+      <#list currency_line.data as line>
+        <tr>
+          <td align="center" style="border:1px solid black;">${line.GUI_VAT}</td>
+          <td align="center" style="border:1px solid black;">${line.GUI_VAT_Date}</td>
+          <td align="right" style="border:1px solid black;">${currency_line.currency_symbol}${line.fxamount?number?string[",##0.00"]}</td>	
+        </tr>
+      </#list>
+        <tr>
+          <td align="center" colspan="2" style="border:1px solid black;"><b>合計</b></td>
+          <td align="right" style="border:1px solid black;"><b>${currency_line.currency_symbol}${currency_line.amount_total?number?string[",##0.00"]}</b></td>  
+        </tr>
+    </#list>
+   
+  </table>
+  <br/>
+  <b style="color:#4472C4;">【提醒】<br/>如已匯款，建議提供匯款證明，以利核帳沖銷。<br/>感謝貴司配合~</b>
+
+</body>

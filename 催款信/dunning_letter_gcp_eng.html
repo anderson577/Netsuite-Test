@@ -1,0 +1,38 @@
+<head>
+	
+    <style type="text/css">
+     
+    </style>
+</head>
+<body> 
+  <p>Dear Sir/Madam,</p>
+  Please provide the payment slip for the invoice as below.<br/> 
+  
+  <table cellpadding="2" cellspacing="0" class="border" style="margin-top:10px;border:1px solid black;" >
+    <tr>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>Document Number</b></td>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>Date</b></td>
+      <td align="center" style="width: 140px;border:1px solid black;background-color:#B7E1CD;"><b>Amount</b></td>	
+    </tr>
+    <#list result.lines as currency_line>
+      <#list currency_line.data as line>
+        <tr>
+          <td align="center" style="border:1px solid black;">${line.tranid}</td>
+          <td align="center" style="border:1px solid black;">${line.trandate}</td>
+          <td align="right" style="border:1px solid black;">${currency_line.currency_symbol}${line.fxamount?number?string[",##0.00"]}</td>	
+        </tr>
+      </#list>
+        <tr>
+          <td align="center" colspan="2" style="border:1px solid black;"><b>Total</b></td>
+          <td align="right" style="border:1px solid black;"><b>${currency_line.currency_symbol}${currency_line.amount_total?number?string[",##0.00"]}</b></td>  
+        </tr>
+    </#list>
+   
+  </table>
+  <br/>
+  We would need your help to clear invoices within the term.<br/>
+  If you finish the payment already,please provide the slip to us.<br/>
+  <br/> 
+  Thank you so much~<br/>  
+
+</body>

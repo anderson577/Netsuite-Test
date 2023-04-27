@@ -1,0 +1,55 @@
+<head>
+
+    <style type="text/css">
+     
+    </style>
+</head>
+<body>  
+  <p>親愛的客戶您好：</p>
+  感謝貴公司與宏庭科技合作Google Workspace服務，宏庭科技於${record.GUI_VAT_Year}年${record.GUI_VAT_Month}月提供服務，基於友好商業關係，在此通知帳款到期應繳清 <b style="color:red;">
+    <#list result.lines as currency_line>   
+      ${currency_line.currency_symbol}${currency_line.amount_total?number?string[",##0.00"]}</#list></b>。<br/>
+  請協助將款項匯至宏庭科技銀行帳戶，若貴公司已付款完成，也請協助提供匯款單據供我司財務部銷帳，造成您的不便也請見諒。
+  <br/>
+  <br/>
+  【逾期帳款】  
+  <table cellpadding="2" cellspacing="0" class="border" style="margin-top:10px;border:1px solid black;" >
+    <tr>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票號碼</b></td>
+      <td align="center" style="width: 100px;border:1px solid black;background-color:#B7E1CD;"><b>發票日期</b></td>
+      <td align="center" style="width: 140px;border:1px solid black;background-color:#B7E1CD;"><b>發票金額</b></td>	
+    </tr>
+    <#list result.lines as currency_line>
+      <#list currency_line.data as line>
+        <tr>
+          <td align="center" style="border:1px solid black;">${line.GUI_VAT}</td>
+          <td align="center" style="border:1px solid black;">${line.GUI_VAT_Date}</td>
+          <td align="right" style="border:1px solid black;">${currency_line.currency_symbol}${line.fxamount?number?string[",##0.00"]}</td>	
+        </tr>
+      </#list>
+        <tr>
+          <td align="center" colspan="2" style="border:1px solid black;"><b>合計</b></td>
+          <td align="right" style="border:1px solid black;"><b>${currency_line.currency_symbol}${currency_line.amount_total?number?string[",##0.00"]}</b></td>  
+        </tr>
+    </#list>
+   
+  </table>
+  <br/>
+  <b>若有任何問題，歡迎您撥打免費專線：0800-500-970${record.sales_tex}</b><br/><br/>
+  匯款資如下：<br/>
+  戶名：宏庭科技股份有限公司<br/>
+  銀行：(021)花旗(台灣)商業銀行<br/>
+  分行：(0018)營業部<br/>
+  帳號：${record.vacc_number}<br/>
+  <br/>
+  <br/>
+  祝業績長紅，鴻圖大展<br/>
+  ---------------------------------------<br/>
+  宏庭科技(股)公司<br/>
+  Google 事業處<br/>
+  地址：台北市中山區樂群二路267號6樓之9<br/>
+  信箱：workspace.sales@microfusion.cloud<br/>
+  免費專線：0800-500-970<br/>
+
+
+</body>

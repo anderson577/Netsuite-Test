@@ -23,17 +23,15 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                      "AND", 
                      ["custbody1","isnotempty",""], 
                      "AND", 
-                     ["department","anyof","1"], 
+                     ["department","anyof","2"], //Google 
                      "AND", 
-                     ["subsidiary","anyof","1"], 
+                     ["class","anyof","4","31","14"], //G-Suite / HMH / HDE 
                      "AND", 
-                     ["custbody21.group","anyof",Search_group('AWS TW CS Group')], 
+                     ["custbody10","isnotempty",""],
                      "AND", 
-                     ["customer.custentity_dunning_enable","is","T"],
+                     ["customer.custentity_gws_dunning_enable","is","T"],
                      "AND", 
-                     ["customer.custentity_invoice_groups_email","isnotempty",""],
-                     "AND", 
-                     ["custbody10","isnotempty",""]
+                     ["customer.custentity_gws_invoice_groups_email","isnotempty",""]            
                   ],
                   columns:
                   [
@@ -89,7 +87,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                type: "message",
                filters:
                [
-                  ["subject","contains","催收帳款通知信"], 
+                  ["subject","contains","【宏庭科技帳款通知】Google Workspace_"], 
                   "AND", 
                   ["entity.internalid","anyof",cus_id], 
                   "AND", 
@@ -113,7 +111,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                   scriptId: 'customscript_dunning_letter_sl',
                   deploymentId: 'customdeploy_dunning_letter_sl',
                   returnExternalUrl: true,
-                  params:{ cus_id:cus_id,mode:'send',inv_L:'all',send_L:'all',bu:'AWS'}
+                  params:{ cus_id:cus_id,mode:'send',inv_L:'all',send_L:'all',bu:'GWS'}
                  });       
                  
                   // log.debug("scriptUrl",scriptUrl)    
@@ -135,7 +133,7 @@ define(['N/search', 'N/record', 'N/runtime', 'N/error', 'N/format', 'N/config','
                         timezone: format.Timezone.ASIA_TAIPEI
                     })             
                     TAIPEI_current_date=TAIPEI_current_date.substr(0,TAIPEI_current_date.indexOf(' '));                 
-                    cus_rec.setText({fieldId: 'custentity_aws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
+                    cus_rec.setText({fieldId: 'custentity_gws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
                     cus_rec.save(); 
                    }
             

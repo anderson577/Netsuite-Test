@@ -179,6 +179,7 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
         var invoice_data;
         if(Use_BU=='AWS')invoice_data=search_invoice_data(customer);
         if(Use_BU=='GCP')invoice_data=search_gcp_invoice_data(customer);
+        if(Use_BU=='GWS')invoice_data=search_gws_invoice_data(customer);
         var newtab = form.addTab({ id : 'custpage_invoicetab', label : '客戶發票清單' });   
     
 
@@ -433,11 +434,81 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
                 "AND", 
                 ["duedate","onorbefore","lastweektodate"], 
                 "AND", 
+                ["status","anyof","CustInvc:A"],               
+                "AND", 
+                ["department","anyof","2"], //Google 
+                "AND", 
+                ["class","anyof","3","26","30","34","33","27"], //GCP / PS / MS / MS-G / ISV / Training           
+                "AND", 
+                ["name","anyof",cus]  
+            ],
+            columns:
+            [
+                search.createColumn({name: "trandate",label: "Date"}),
+                 search.createColumn({name: "duedate", label: "Due Date/Receive By"}),
+                 search.createColumn({name: "type", label: "Type"}),
+                 search.createColumn({name: "tranid",label: "Document Number",sort: search.Sort.DESC,}),
+                 search.createColumn({name: "entity", label: "Name"}),
+                 search.createColumn({name: "statusref", label: "Status"}),
+                 search.createColumn({name: "trackingnumbers", label: "Tracking Numbers"}),
+                 search.createColumn({name: "memo", label: "Memo"}),
+                 search.createColumn({name: "currency", label: "Currency"}),
+                 search.createColumn({name: "fxamount", label: "Amount (Foreign Currency)"}),
+                 search.createColumn({name: "custbody1", label: "GUI/VAT"}),
+                 search.createColumn({name: "custbody10", label: "GUI/VAT Date"}),
+                 search.createColumn({
+                    name: "altname",
+                    join: "customer",
+                    label: "Name"
+                 }),
+                 search.createColumn({name: "department", label: "BU"}),
+                 search.createColumn({name: "classnohierarchy", label: "Class (no hierarchy)"}),
+                 search.createColumn({name: "salesrep", label: "Sales Rep"}),
+                 search.createColumn({name: "custbody21", label: "Create By"}),
+            ]
+         });
+         var searchResultCount = transactionSearchObj.runPaged().count;
+         log.debug("transactionSearchObj result count",searchResultCount);
+         var data=[]; 
+         transactionSearchObj.run().each(function(result){
+            data.push({
+                recordtype:result.recordType,
+                id:result.id,           
+                trandate:result.getValue('trandate'),
+                duedate:result.getValue('duedate'),
+                tranid:result.getValue('tranid'),
+                name:result.getText('entity'),
+                cus_id:result.getValue('entity'),             
+                currency:result.getText('currency'),          
+                amount:result.getValue('fxamount'),
+                vat:result.getValue('custbody1'),
+                vat_date:result.getValue('custbody10'),
+                department:result.getText('department'),
+                class:result.getText('classnohierarchy'),
+                create_by:result.getText('custbody21'),             
+            });
+            return true;
+         });
+         
+         return data;
+    }
+    function search_gws_invoice_data(cus){
+        if(cus=='')return [];
+        var transactionSearchObj = search.create({
+            type: "transaction",
+            filters:
+            [
+                ["mainline","is","T"], 
+                "AND", 
+                ["duedate","onorbefore","lastweektodate"], 
+                "AND", 
                 ["status","anyof","CustInvc:A"], 
                 "AND", 
                 ["custbody1","isnotempty",""], 
                 "AND", 
-                ["department","anyof","2"],              
+                ["department","anyof","2"], //Google 
+                "AND", 
+                ["class","anyof","4","31","14"], //G-Suite / HMH / HDE           
                 "AND", 
                 ["name","anyof",cus],              
                 "AND", 
@@ -596,11 +667,13 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             if(groups_email!=''){
                 groups_email=groups_email.split(';');
                 for(var i=0;i<groups_email.length;i++){
-                    contact_L.push({
-                        email:groups_email[i]+'#@'+ind,
-                        name:(ind+1)+'.'+groups_email[i]
-                    });
-                    ind++;
+                    if(groups_email[i]!=''){
+                        contact_L.push({
+                            email:groups_email[i]+'#@'+ind,
+                            name:(ind+1)+'.'+groups_email[i]
+                        });
+                        ind++;
+                    }                  
                 }            
             }
           
@@ -634,11 +707,13 @@ function(search, file, log, ui, runtime, record, url, format, config, task, rend
             if(groups_email!=''){
                 groups_email=groups_email.split(';');
                 for(var i=0;i<groups_email.length;i++){
-                    contact_L.push({
-                        email:groups_email[i]+'#@'+ind,
-                        name:(ind+1)+'.'+groups_email[i]
-                    });
-                    ind++;
+                    if(groups_email[i]!=''){
+                        contact_L.push({
+                            email:groups_email[i]+'#@'+ind,
+                            name:(ind+1)+'.'+groups_email[i]
+                        });
+                        ind++;
+                    }                  
                 }            
             }
           

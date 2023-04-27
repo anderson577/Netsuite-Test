@@ -63,37 +63,42 @@ define([ 'N/file', 'N/encode', 'N/runtime', 'N/https', 'N/url', 'N/search', 'N/f
                 for(var i=0;i<basecurrency_L.length;i++){
                     for(var j=0;j<transactioncurrency_L.length;j++){
                         if(basecurrency_L[i]!=transactioncurrency_L[j]){
-                            if(basecurrency_L[i]=='TWD' && transactioncurrency_L[j]=='SGD'){
-                                currency_data_L.push({
-                                    transactioncurrency:transactioncurrency_L[j],
-                                    basecurrency:basecurrency_L[i],                       
-                                    exchangerate:"22.4356098"
-                                });
-                            }else if(basecurrency_L[i]=='TWD' && transactioncurrency_L[j]=='MYR'){
-                                currency_data_L.push({
-                                    transactioncurrency:transactioncurrency_L[j],
-                                    basecurrency:basecurrency_L[i],                       
-                                    exchangerate:"7.439"
-                                });
-                            }else if(basecurrency_L[i]=='CNY' && transactioncurrency_L[j]=='MYR'){
-                                currency_data_L.push({
-                                    transactioncurrency:transactioncurrency_L[j],
-                                    basecurrency:basecurrency_L[i],                       
-                                    exchangerate:"1.650543598846239"
-                                });
-                            }else if(basecurrency_L[i]=='HKD' && transactioncurrency_L[j]=='MYR'){
-                                currency_data_L.push({
-                                    transactioncurrency:transactioncurrency_L[j],
-                                    basecurrency:basecurrency_L[i],                       
-                                    exchangerate:"1.892875318066158"
-                                });
-                            }else{                              
-                                currency_data_L.push({
-                                    transactioncurrency:transactioncurrency_L[j],
-                                    basecurrency:basecurrency_L[i],                       
-                                    exchangerate:currency_data[basecurrency_L[i]+transactioncurrency_L[j]]
-                                });
-                            }
+                            // if(basecurrency_L[i]=='TWD' && transactioncurrency_L[j]=='SGD'){
+                            //     currency_data_L.push({
+                            //         transactioncurrency:transactioncurrency_L[j],
+                            //         basecurrency:basecurrency_L[i],                       
+                            //         exchangerate:"22.4356098"
+                            //     });
+                            // }else if(basecurrency_L[i]=='TWD' && transactioncurrency_L[j]=='MYR'){
+                            //     currency_data_L.push({
+                            //         transactioncurrency:transactioncurrency_L[j],
+                            //         basecurrency:basecurrency_L[i],                       
+                            //         exchangerate:"7.439"
+                            //     });
+                            // }else if(basecurrency_L[i]=='CNY' && transactioncurrency_L[j]=='MYR'){
+                            //     currency_data_L.push({
+                            //         transactioncurrency:transactioncurrency_L[j],
+                            //         basecurrency:basecurrency_L[i],                       
+                            //         exchangerate:"1.650543598846239"
+                            //     });
+                            // }else if(basecurrency_L[i]=='HKD' && transactioncurrency_L[j]=='MYR'){
+                            //     currency_data_L.push({
+                            //         transactioncurrency:transactioncurrency_L[j],
+                            //         basecurrency:basecurrency_L[i],                       
+                            //         exchangerate:"1.892875318066158"
+                            //     });
+                            // }else{                              
+                            //     currency_data_L.push({
+                            //         transactioncurrency:transactioncurrency_L[j],
+                            //         basecurrency:basecurrency_L[i],                       
+                            //         exchangerate:currency_data[basecurrency_L[i]+transactioncurrency_L[j]]
+                            //     });
+                            // }
+                            currency_data_L.push({
+                                transactioncurrency:transactioncurrency_L[j],
+                                basecurrency:basecurrency_L[i],                       
+                                exchangerate:currency_data[basecurrency_L[i]+transactioncurrency_L[j]]
+                            });
                           
                         }                     
                     }

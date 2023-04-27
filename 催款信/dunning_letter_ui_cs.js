@@ -190,7 +190,9 @@ function(log, url, record, search, message, currentRecord, https, dialog, runtim
                 timezone: format.Timezone.ASIA_TAIPEI
             })             
             TAIPEI_current_date=TAIPEI_current_date.substr(0,TAIPEI_current_date.indexOf(' '));                 
-            cus_rec.setText({fieldId: 'custentity_aws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
+            if(bu=='AWS')cus_rec.setText({fieldId: 'custentity_aws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true});
+            if(bu=='GCP')cus_rec.setText({fieldId: 'custentity_gcp_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true}); 
+            if(bu=='GWS')cus_rec.setText({fieldId: 'custentity_gws_last_dunning_date',text:TAIPEI_current_date,ignoreFieldChange: true});  
             cus_rec.save(); 
             Ext.Msg.show({title: 'success',width: 250,buttons: Ext.Msg.OK, msg:'已成功發送'});
           }else{
